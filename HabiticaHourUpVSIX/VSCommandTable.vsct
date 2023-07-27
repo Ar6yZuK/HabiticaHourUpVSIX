@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <Extern href="stdidcmd.h"/>
+  <Extern href="vsshlids.h"/>
+  <Include href="KnownImageIds.vsct"/>
+  <Include href="VSGlobals.vsct"/>
+
+  <Commands package="HabiticaHourUpVSIX">
+	<Groups>
+	  <Group guid="HabiticaHourUpVSIX" id="MyMenuGroup" priority="0x0600">
+		<Parent guid="VSMainMenu" id="Tools"/>
+	  </Group>
+	</Groups>
+
+	<!--This section defines the elements the user can interact with, like a menu command or a button
+		or combo box in a toolbar. -->
+	<Buttons>
+		
+		<!--<Button guid="HabiticaHourUpVSIX" id="LoadSettingsCommand" priority="0x0105" type="Button">
+			<Parent guid="VSMainMenu" id="Tools.ExternalCustomGroup"/>
+			<Icon guid="ImageCatalogGuid" id="StatusInformation"/>
+			<CommandFlag>IconIsMoniker</CommandFlag>
+			<Strings>
+				<ButtonText>Test</ButtonText>
+			</Strings>
+		</Button>-->
+		<Button guid="HabiticaHourUpVSIX" id="OpenSettingsWindow" type="Button">
+			<Parent guid="HabiticaHourUpVSIX" id="MyMenuGroup"/>
+			<CommandFlag>IconIsMoniker</CommandFlag>
+			<Strings>
+				<ButtonText>Open Habitica settings</ButtonText>
+				<!--<LocCanonicalName>.Habitica</LocCanonicalName>-->
+			</Strings>
+		</Button>
+		
+	</Buttons>
+  </Commands>
+
+  <Symbols>
+	<GuidSymbol name="HabiticaHourUpVSIX" value="{58aab471-8063-4477-881c-9d21682ca18a}">
+	  <IDSymbol name="MyMenuGroup" value="0x0001" />
+	  <IDSymbol name="OpenSettingsWindow" value="0x0100" />
+	</GuidSymbol>
+  </Symbols>
+</CommandTable>

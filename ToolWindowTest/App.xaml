@@ -1,0 +1,8 @@
+﻿<Application x:Class="ToolWindowTest.App"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:local="clr-namespace:ToolWindowTest"
+			 StartupUri="MainApp.xaml">
+	<Application.Resources>
+	</Application.Resources>
+</Application>
