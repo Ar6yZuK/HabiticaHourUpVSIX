@@ -17,7 +17,6 @@ public partial class SettingsWindow : UserControl
 {
 	private readonly HabiticaHourUpVSIXPackage _habiticaHourUpVSIXPackage;
 	private readonly WorkingTimeCounterTimer _workingTimeCounter;
-	private readonly ILogger<SettingsWindow> _logger;
 	private readonly Timer _timer;
 
 	public bool TicksEnabled
@@ -40,11 +39,7 @@ public partial class SettingsWindow : UserControl
 	{
 		get
 		{
-			using var scope = _logger.BeginScope("Time to tick Calculation");
-
-			var timeToNextTick = _habiticaHourUpVSIXPackage.Timer.CalculateTickAfter(out var ticksCalculated);
-			_logger.LogDebug("Ticks calculated:{tickCalculated}", ticksCalculated);
-			return timeToNextTick;
+			return _habiticaHourUpVSIXPackage.Timer.CalculateTickAfter(out _);
 		}
 		set
 		{
@@ -74,7 +69,6 @@ public partial class SettingsWindow : UserControl
 	{
 		this.DataContext = this;
 		_habiticaHourUpVSIXPackage = habiticaHourUpVSIXPackage;
-		_logger = _habiticaHourUpVSIXPackage.LoggerProvider.CreateLogger<SettingsWindow>();
 
 		_workingTimeCounter = new WorkingTimeCounterTimer(_habiticaHourUpVSIXPackage.HabiticaSettingsReader.Read().LastWorkTime, Divisor);
 		_habiticaHourUpVSIXPackage.HabiticaSettingsReader.OnSaving += Settings_OnSaving;

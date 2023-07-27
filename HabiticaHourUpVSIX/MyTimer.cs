@@ -6,7 +6,6 @@ namespace HabiticaHourUpVSIX;
 
 public class MyTimer
 {
-	private readonly ILogger<HabiticaHourUpVSIXPackage>? _logger;
 	private readonly WorkingTimeCounterTimer _workingTimeCounter;
 	private readonly TimeSpan _lastWorkTime;
 	private readonly Timer _timer;
@@ -19,10 +18,8 @@ public class MyTimer
 	public TimeSpan Divisor { get; private set; }
 	public bool Enabled { get; private set; }
 
-	public MyTimer(TimeSpan lastWorkTime, TimeSpan divisor, ILogger<HabiticaHourUpVSIXPackage>? logger = null)
+	public MyTimer(TimeSpan lastWorkTime, TimeSpan divisor)
 	{
-		_logger = logger;
-
 		_lastWorkTime = lastWorkTime;
 		Divisor = divisor;
 
@@ -42,12 +39,8 @@ public class MyTimer
 	/// </summary>
 	public bool SetTimer(TimeSpan workTime, TimeSpan divisor, out long ticksCalculated)
 	{
-		using IDisposable? scope = _logger?.BeginScope(nameof(MyTimer));
-		using IDisposable? scope2 = _logger?.BeginScope(nameof(SetTimer));
 		Divisor = divisor;
 		var tickAfter = _workingTimeCounter.CalculateNextTickAfter(workTime, out ticksCalculated);
-		//_logger?.LogInformation("Set divisor to:{divisor}.\n\tWorkTime: {workTime}.\n\tLast tick:{lastTick} Ago: {lastTickAgo} \n\tCalculated first tick after:{tick}",
-		//						Divisor, workTime, _lastTick, lastTickAgo, tickAfter);
 
 		return Enabled = _timer.Change(tickAfter, divisor);
 	}

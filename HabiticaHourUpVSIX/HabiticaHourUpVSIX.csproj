@@ -57,7 +57,6 @@
       <DependentUpon>Settings1.settings</DependentUpon>
     </Compile>
     <Compile Include="AppSettings\SourceDestMapper.cs" />
-    <Compile Include="FileLoggerProvider.cs" />
     <Compile Include="Commands\ShowToolWindowCommand.cs" />
     <Compile Include="FuncTaskHelpers.cs" />
     <Compile Include="MyTimer.cs" />
