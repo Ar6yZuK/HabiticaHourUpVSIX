@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using HabiticaHourUpVSIX.AppSettings.Abstractions;
 using HabiticaHourUpVSIX.AppSettings.Models;
 using Microsoft.Build.Framework.XamlTypes;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.Threading;
 using System.ComponentModel;
 using System.Timers;
