@@ -11,7 +11,7 @@ namespace HabiticaHourUpVSIX
         public const string Name = "HabiticaHourUpVSIX";
         public const string Description = @"Empty VSIX Project.";
         public const string Language = "en-US";
-        public const string Version = "1.0";
+        public const string Version = "1.1";
         public const string Author = "Ar6";
         public const string Tags = "";
     }

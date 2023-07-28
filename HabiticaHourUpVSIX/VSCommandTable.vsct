@@ -25,12 +25,11 @@
 				<ButtonText>Test</ButtonText>
 			</Strings>
 		</Button>-->
-		<Button guid="HabiticaHourUpVSIX" id="OpenSettingsWindow" type="Button">
+		<Button guid="HabiticaHourUpVSIX" id="OpenSettingsWindow" type="Button" priority="0x0100">
 			<Parent guid="HabiticaHourUpVSIX" id="MyMenuGroup"/>
 			<CommandFlag>IconIsMoniker</CommandFlag>
 			<Strings>
 				<ButtonText>Open Habitica settings</ButtonText>
-				<!--<LocCanonicalName>.Habitica</LocCanonicalName>-->
 			</Strings>
 		</Button>
 		

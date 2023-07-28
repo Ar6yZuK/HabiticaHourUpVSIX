@@ -1,15 +1,20 @@
 ﻿using HabiticaHourUpVSIX.AppSettings.Abstractions;
 using HabiticaHourUpVSIX.AppSettings.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HabiticaHourUpVSIX;
 
+// Need read before write, because there may be data that needs to be left untouched
 public static class SettingsExtensions
 {
+	public static void SetLastTickAfterWithSave(this SettingsWithSaving<HabiticaSettingsModel> obj1, TimeSpan lastTickToSet)
+	{
+		HabiticaSettingsModel settingsRead = obj1.Read();
+		var settingsToWrite = settingsRead with { LastTickAfter = lastTickToSet };
+
+		obj1.Write(settingsToWrite);
+		obj1.Save();
+	}
+
 	public static void SetTicksWithSave(this SettingsWithSaving<HabiticaSettingsModel> obj1, int ticksToSet)
 	{
 		HabiticaSettingsModel settingsRead = obj1.Read();

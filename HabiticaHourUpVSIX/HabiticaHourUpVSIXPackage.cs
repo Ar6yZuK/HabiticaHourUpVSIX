@@ -5,13 +5,10 @@ global using Task = System.Threading.Tasks.Task;
 using HabiticaHourUpVSIX.AppSettings;
 using HabiticaHourUpVSIX.AppSettings.Abstractions;
 using HabiticaHourUpVSIX.AppSettings.Models;
-using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Threading;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 #nullable enable
 
 namespace HabiticaHourUpVSIX;
@@ -49,9 +46,8 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 		HabiticaSettingsModel habiticaSettings = await HabiticaSettingsReader.ReadAsync();
 
 		UserSettingsModel vsSettings = await VSOptionsSettingsReader.ReadAsync();
-		Timer = new MyTimer(habiticaSettings.LastWorkTime, vsSettings.Divisor);
-		Timer.TimerCallback += Tick;
-		Timer.Start();
+		Timer = new MyTimer(habiticaSettings.LastTickAfter, vsSettings.Divisor);
+		Timer.Tick += Tick;
 
 		await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 		VS.Events.SolutionEvents.OnAfterCloseSolution += OnClose;
@@ -64,40 +60,13 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 
 	private void VSOptionsSettingsReader_OnSaving(UserSettingsModel userSettingsModel) // UserSettingsModel(TimeSpan Divisor)
 	{
-		var timerSuccessful = Timer.SetTimer(RealWorkTime, userSettingsModel.Divisor, out long ticksCalculated); // timer Logs calculation in timer
-
-		if (ticksCalculated > 0)
-			AddTicksToAllSettings((int)ticksCalculated);
+		Timer.Change(Timer.NextTick, userSettingsModel.Divisor);
 	}
 
-	private async void OnClose()
+	private void OnClose()
 	{
-		await JoinableTaskFactory.RunAsync(Closing);
-
-		async Task Closing()
-		{
-			HabiticaSettingsModel habiticaSettings = await HabiticaSettingsReader.ReadAsync();
-			UserSettingsModel vsSettings = await VSOptionsSettingsReader.ReadAsync();
-			var wotc = new WorkingOpenTimeCounter(habiticaSettings.LastWorkTime, OpenTime, vsSettings.Divisor);
-
-			var ticks = wotc.DivideLastWorkTime();
-			HabiticaSettingsModel settingsToWrite = habiticaSettings with
-			{
-				LastWorkTime = wotc.WorkTime,
-				TotalTicks = habiticaSettings.TotalTicks + (int)ticks
-			};
-			await HabiticaSettingsReader.WriteAsync(settingsToWrite);
-			await HabiticaSettingsReader.SaveAsync();
-
-			SessionSettingsModel sessionSettings = await SessionSettingsReader.ReadAsync();
-
-			bool confirm = await VS.MessageBox.ShowConfirmAsync($"Send {settingsToWrite.TotalTicks} ticks to habitica?");
-			if(confirm)
-			{
-				await HabiticaSettingsReader.WriteAsync(settingsToWrite with { TotalTicks = 0 });
-				await HabiticaSettingsReader.SaveAsync();
-			}
-		};
+		this.HabiticaSettingsReader.SetLastTickAfterWithSave(Timer.NextTick);
+		// TODO: Show window with send ticks to habitica
 	}
 
 	private void AddTicksToAllSettings(int addedTicks)

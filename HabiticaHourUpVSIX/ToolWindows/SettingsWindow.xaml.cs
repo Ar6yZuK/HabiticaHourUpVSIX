@@ -15,14 +15,8 @@ namespace HabiticaHourUpVSIX;
 public partial class SettingsWindow : UserControl
 {
 	private readonly HabiticaHourUpVSIXPackage _habiticaHourUpVSIXPackage;
-	private readonly WorkingTimeCounterTimer _workingTimeCounter;
 	private readonly Timer _timer;
 
-	public bool TicksEnabled
-	{
-		get => _habiticaHourUpVSIXPackage.Timer.Enabled;
-		set => _ = value ? _habiticaHourUpVSIXPackage.Timer.Start() : _habiticaHourUpVSIXPackage.Timer.Stop();
-	}
 	public int TotalTicks
 	{
 		get => _habiticaHourUpVSIXPackage.HabiticaSettingsReader.Read().TotalTicks;
@@ -33,17 +27,10 @@ public partial class SettingsWindow : UserControl
 		get => _habiticaHourUpVSIXPackage.SessionSettingsReader.Read().Ticks;
 		set => _habiticaHourUpVSIXPackage.SessionSettingsReader.SetTicks(value);
 	}
-
 	public TimeSpan TimeToTick
 	{
-		get
-		{
-			return _habiticaHourUpVSIXPackage.Timer.CalculateTickAfter(out _);
-		}
-		set
-		{
-			var success = _habiticaHourUpVSIXPackage.Timer.TickAfter(value);
-		}
+		get => _habiticaHourUpVSIXPackage.Timer.NextTick;
+		set => _habiticaHourUpVSIXPackage.Timer.Change(value, Divisor);
 	}
 	private bool _timeToTickEdit;
 
@@ -52,7 +39,7 @@ public partial class SettingsWindow : UserControl
 		get => _timeToTickEdit;
 		set
 		{
-			if(_timeToTickEdit = value)
+			if (_timeToTickEdit = value)
 				_timer.Stop();
 			else
 				_timer.Start();
@@ -69,24 +56,17 @@ public partial class SettingsWindow : UserControl
 		this.DataContext = this;
 		_habiticaHourUpVSIXPackage = habiticaHourUpVSIXPackage;
 
-		_workingTimeCounter = new WorkingTimeCounterTimer(_habiticaHourUpVSIXPackage.HabiticaSettingsReader.Read().LastWorkTime, Divisor);
+		_timer = new Timer(interval:1000);
+		_timer.Elapsed += (s, e) => OnPropertyChanged(nameof(TimeToTick));
+
 		_habiticaHourUpVSIXPackage.HabiticaSettingsReader.OnSaving += Settings_OnSaving;
-		_timer = new Timer(1000);
-		_timer.Elapsed += _timer_Elapsed;
 
 		InitializeComponent();
-		IsTimeToTickEdit = false;
 	}
 
 	private void Settings_OnSaving(HabiticaSettingsModel arg)
 	{
 		this.OnPropertyChanged(nameof(TotalTicks));
-	}
-	private void _timer_Elapsed(object sender, ElapsedEventArgs e)
-	{
-		if (_habiticaHourUpVSIXPackage.Timer.Enabled)
-		{
-			this.OnPropertyChanged(nameof(TimeToTick));
-		}
+		this.OnPropertyChanged(nameof(SessionTicks));
 	}
 }
