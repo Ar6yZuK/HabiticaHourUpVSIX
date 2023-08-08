@@ -1,25 +1,25 @@
-using HabiticaHourUpVSIX.AppSettings;
 using HabiticaHourUpVSIX.AppSettings.Abstractions;
 using HabiticaHourUpVSIX.AppSettings.Models;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Threading;
-using Moq;
 
 namespace SettingsTests;
 
 public class Tests
 {
 	[Test]
-	public async Task SessionTest()
+	public void SessionTest()
 	{
-		var settings = new SessionSettings();
+		// Cant be test because settings are internal
+		throw new NotImplementedException();
+		SettingsWithSaving<object, SessionSettingsModel> settings = null!;
+
+		//var settings = new SessionSettings();
 
 		bool invoked = false;
 
-		SessionSettingsModel read = await settings.ReadAsync();
+		SessionSettingsModel read = settings.Read();
 		SessionSettingsModel valueToWrite = new(1);
-		await settings.WriteAsync(valueToWrite);
-		SessionSettingsModel read2 = await settings.ReadAsync();
+		settings.Write(valueToWrite);
+		SessionSettingsModel read2 = settings.Read();
 
 		Assert.Multiple(() =>
 		{
@@ -30,17 +30,22 @@ public class Tests
 	}
 
 	[Test]
-	public async Task TestAddTicks()
+	public void TestAddTicks()
 	{
-		var settings = new HabiticaSettings();
-		bool invoked = false;
-		settings.OnSavingAsync += x => { invoked = true; Console.WriteLine(x); return Task.CompletedTask; };
+		// Cant be test because settings are internal
+		throw new NotImplementedException();
+		SettingsWithSaving<object, HabiticaSettingsModel> settings = null!;
 
-		HabiticaSettingsModel settingsRead = await settings.ReadAsync();
+		//var settings = new HabiticaSettings();
+
+		bool invoked = false;
+		settings.OnSaving += x => { invoked = true; Console.WriteLine(x); };
+
+		HabiticaSettingsModel settingsRead = settings.Read();
 		HabiticaSettingsModel settingsToWrite = settingsRead with { TotalTicks = settingsRead.TotalTicks + 1 };
-		await settings.WriteAsync(settingsToWrite);
-		await settings.SaveAsync();
-		HabiticaSettingsModel settingsRead2 = await settings.ReadAsync();
+		settings.Write(settingsToWrite);
+		settings.Save();
+		HabiticaSettingsModel settingsRead2 = settings.Read();
 
 		Assert.Multiple(() =>
 		{
@@ -49,13 +54,8 @@ public class Tests
 			Assert.That(settingsRead2, Is.EqualTo(settingsToWrite));
 		});
 
-		await settings.WriteAsync(default);
-		await settings.SaveAsync();
-	}
-	[Test]
-	public async Task Test()
-	{
-		
+		settings.Write(default);
+		settings.Save();
 	}
 }
 public record struct Test(int W);

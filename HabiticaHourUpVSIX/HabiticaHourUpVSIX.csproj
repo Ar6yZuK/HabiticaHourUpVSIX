@@ -1,5 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <LangVersion>latest</LangVersion>
@@ -48,17 +47,29 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AppSettings\Models\HabiticaSettingsModel.cs" />
-    <Compile Include="AppSettings\Models\SessionSettingsModel.cs" />
-    <Compile Include="AppSettings\SettingsAbstractions.cs" />
-    <Compile Include="AppSettings\Settings1.Designer.cs">
+    <Compile Include="AppSettings\CredentialsSettings1.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <DependentUpon>Settings1.settings</DependentUpon>
+      <DependentUpon>CredentialsSettings1.settings</DependentUpon>
+    </Compile>
+    <Compile Include="AppSettings\Models\HabiticaCredentials.cs" />
+    <Compile Include="AppSettings\Models\HabiticaSettingsModel.cs" />
+    <Compile Include="AppSettings\Models\SessionSettingsModel.cs" />
+    <Compile Include="Validation\TimeSpanValidator.cs" />
+    <Compile Include="AppSettings\SettingsAbstractions.cs" />
+    <Compile Include="AppSettings\HabiticaSettings1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>HabiticaSettings1.settings</DependentUpon>
     </Compile>
     <Compile Include="AppSettings\SourceDestMapper.cs" />
-    <Compile Include="Commands\ShowToolWindowCommand.cs" />
-    <Compile Include="FuncTaskHelpers.cs" />
+    <Compile Include="AppSettings\UserSettings3.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>UserSettings3.settings</DependentUpon>
+    </Compile>
+    <Compile Include="Commands\ShowSettingsCommand.cs" />
+    <Compile Include="HabiticaClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HabiticaHourUpVSIXPackage.cs" />
     <Compile Include="AppSettings\Settings.cs" />
@@ -75,17 +86,24 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>VSCommandTable.vsct</DependentUpon>
     </Compile>
-    <Compile Include="AppSettings\General1.cs" />
-    <Compile Include="ToolWindows\ToolWindow1.cs" />
-    <Compile Include="ToolWindows\SettingsWindow.xaml.cs">
-      <DependentUpon>SettingsWindow.xaml</DependentUpon>
+    <Compile Include="ToolWindows\SettingsToolWindow.cs" />
+    <Compile Include="ToolWindows\SettingsWindowControl.xaml.cs">
+      <DependentUpon>SettingsWindowControl.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="AppSettings\Settings1.settings">
-      <Generator>PublicSettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings1.Designer.cs</LastGenOutput>
+    <None Include="AppSettings\CredentialsSettings1.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>CredentialsSettings1.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="AppSettings\HabiticaSettings1.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>HabiticaSettings1.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="AppSettings\UserSettings3.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>UserSettings3.Designer.cs</LastGenOutput>
     </None>
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
@@ -105,7 +123,14 @@
     </VSCTCompile>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="HabiticaDotnetFramework, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\sources\HabiticaDotnetFramework.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="OneOf">
+      <HintPath>..\sources\OneOf.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -113,6 +138,10 @@
     <Reference Include="System.Design" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Text.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\sources\System.Text.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
@@ -133,7 +162,7 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Page Include="ToolWindows\SettingsWindow.xaml">
+    <Page Include="ToolWindows\SettingsWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

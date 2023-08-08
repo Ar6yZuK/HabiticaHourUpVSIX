@@ -1,7 +1,5 @@
-﻿using Ar6yZuK.MethodHelpers;
-using HabiticaHourUpVSIX.AppSettings.Abstractions;
+﻿using HabiticaHourUpVSIX.AppSettings.Abstractions;
 using HabiticaHourUpVSIX.AppSettings.Models;
-using Microsoft.VisualStudio.Threading;
 using Newtonsoft.Json;
 using System.IO;
 using System.Threading.Tasks;
@@ -58,53 +56,47 @@ public class FileSettings : ISettings<UserSettingsModel>
 		throw new NotImplementedException();
 	}
 }
-public sealed class VSOptionsSettings : SettingsWithSaving<General1, UserSettingsModel>
+internal sealed class UserSettings : SettingsWithSaving<UserSettings3, UserSettingsModel>
 {
-	private readonly JoinableTaskFactory _joinableTaskFactory;
-	private readonly AsyncLazy<General1> _lazySettings;
-
-	protected override General1 Source
+	protected override UserSettings3 Source
 	{
-		get => _lazySettings.GetValue();
+		get => UserSettings3.Default;
 	}
 
-	public VSOptionsSettings(JoinableTaskFactory joinableTaskFactory)
+	public override void Save()
 	{
-		_joinableTaskFactory = joinableTaskFactory;
-		_lazySettings = new AsyncLazy<General1>(General1.GetLiveInstanceAsync, _joinableTaskFactory);
-
-		General1.Saved += x => _joinableTaskFactory.Run(base.SaveAsync); // Notify all subscribers from base SaveAsync
-	}
-
-	public override async Task SaveAsync()
-	{
-		await base.SaveAsync();
-		await Source.SaveAsync();
-	}
-}
-public sealed class HabiticaSettings : SettingsWithSaving<Settings1, HabiticaSettingsModel>
-{
-	protected override Settings1 Source => Settings1.Default;
-
-	public override async Task SaveAsync()
-	{
-		await base.SaveAsync();
+		base.Save();
 		Source.Save();
 	}
 }
+internal sealed class HabiticaSettings : SettingsWithSaving<HabiticaSettings1, HabiticaSettingsModel>
+{
+	protected override HabiticaSettings1 Source => HabiticaSettings1.Default;
 
-public sealed class SessionSettings : Settings<SessionSettingsModel>
+	public override void Save()
+	{
+		base.Save();
+		Source.Save();
+	}
+}
+internal sealed class CredentialsSettings : SettingsWithSaving<CredentialsSettings1, HabiticaCredentials>
+{
+    protected override CredentialsSettings1 Source => CredentialsSettings1.Default;
+
+    public override void Save()
+    {
+        base.Save();
+        Source.Save();
+    }
+}
+internal sealed class SessionSettings : Settings<SessionSettingsModel>
 {
 	private readonly SourceDestMapper<SessionSettingsModelClass, SessionSettingsModel> _mapper = new();
 	private readonly SessionSettingsModelClass _source = SessionSettingsModelClass.Default;
 
 	public override SessionSettingsModel Read()
 		=> _mapper.Map(_source);
-	public override Task<SessionSettingsModel> ReadAsync()
-		=> Task.Run(Read);
 
 	public override void Write(SessionSettingsModel value)
 		=> _mapper.Map(value, _source);
-	public override Task WriteAsync(SessionSettingsModel value)
-		=> Task.Run(() => Write(value));
 }

@@ -26,6 +26,10 @@
 			<RowDefinition Height="36"/>
 			<RowDefinition Height="36"/>
 			<RowDefinition Height="36"/>
+			<RowDefinition Height="36"/>
+			<RowDefinition Height="36"/>
+			<RowDefinition Height="36"/>
+			<RowDefinition Height="36"/>
 		</Grid.RowDefinitions>
 
 		<Label Content="Total Ticks" DockPanel.Dock="Top" Grid.Row="0"/>
@@ -41,11 +45,23 @@
 				<ColumnDefinition Width="auto"/>
 			</Grid.ColumnDefinitions>
 
-			<TextBox Text="{Binding TimeToTick}" IsReadOnly="{Binding IsTimeToTickEdit}"/>
-			<CheckBox Content="Edit" IsChecked="{Binding IsTimeToTickEdit}" Grid.Column="1" Margin="6,0,6,0" VerticalContentAlignment="Center"/>
+			<TextBox Text="{Binding TimeToTick}" IsReadOnly="{Binding TimeToTickEditReverse}"/>
+			<Button Content="Show" Grid.Column="1" Command="{Binding ShowTimeToTickCommand}" Margin="3.45"/>
 		</Grid>
 
 		<Label Content="Divisor" Grid.Row="3"/>
 		<TextBox Text="{Binding Divisor}" Grid.Row="3" Grid.Column="1"/>
+
+		<Label Content="Habitica User ID" Grid.Row="4"/>
+		<PasswordBox x:Name="HabiticaUserIdPasswordBox" Grid.Row="4" Grid.Column="1"/>
+
+		<Label Content="Habitica API-Key" Grid.Row="5"/>
+		<PasswordBox x:Name="HabiticaApiKeyPasswordBox" Grid.Row="5" Grid.Column="1"/>
+
+		<Label Content="Task ID to ScoreUp" Grid.Row="6"/>
+		<TextBox Name="TaskToScoreUpTextBox" Text="{Binding TaskIdToScoreUp}" Grid.Row="6" Grid.Column="1"/>
+		
+		<Label Content="Auto send on tick" Grid.Row="7"/>
+		<CheckBox IsChecked="{Binding IsAutoScoreUp}" Grid.Row="7" Grid.Column="1"/>
 	</Grid>
 </UserControl>

@@ -9,22 +9,18 @@ public class MyTimer : IDisposable
 	public event Action? Tick;
 
 	public TimeSpan Divisor { get; private set; }
-	public DateTime Next { get; private set; }
+	public DateTime? Next { get; private set; }
 
-	public TimeSpan NextTick => Next - DateTime.Now;
+	public TimeSpan NextTick => Next - DateTime.Now ?? Timeout.InfiniteTimeSpan;
 
-	public MyTimer(TimeSpan dueTime, TimeSpan divisor)
+	public MyTimer()
 	{
 		_timer = new Timer(
 			delegate
 			{
 				Next = DateTime.Now.Add(Divisor);
 				Tick?.Invoke();
-			},
-			state:null, dueTime, divisor);
-
-		Divisor = divisor;
-		Next = DateTime.Now.Add(dueTime);
+			});
 	}
 
 	public bool Change(TimeSpan dueTime, TimeSpan divisor)

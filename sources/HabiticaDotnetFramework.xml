@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>HabiticaDotnetFramework</name>
+    </assembly>
+    <members>
+        <member name="M:Ar6yZuK.Habitica.HabiticaClient.UserRequestAsync``1(System.String,System.Net.Http.HttpMethod,System.Threading.CancellationToken)">
+            <exception cref="T:System.Net.Http.HttpRequestException"></exception>
+        </member>
+        <member name="M:Ar6yZuK.Habitica.HabiticaClient.TasksRequestAsync``1(System.String,System.Net.Http.HttpMethod,System.Threading.CancellationToken)">
+            <exception cref="T:System.Net.Http.HttpRequestException"></exception>
+        </member>
+        <member name="M:Ar6yZuK.Habitica.HabiticaClient.RequestAsync``1(System.String,System.Net.Http.HttpMethod,System.Threading.CancellationToken)">
+            <exception cref="T:System.Net.Http.HttpRequestException"></exception>
+        </member>
+        <member name="M:Ar6yZuK.Habitica.HabiticaClient.BuyHealthPotion(System.Threading.CancellationToken)">
+            <summary>
+            Use <see cref="M:Ar6yZuK.Habitica.HabiticaClient.BuyHealthPotion(System.Threading.CancellationToken)"/> once per 30 seconds
+            </summary>
+            <exception cref="T:System.Net.Http.HttpRequestException"></exception>
+        </member>
+        <member name="M:Ar6yZuK.Habitica.HabiticaClient.GetAllTasksAsync(System.Threading.CancellationToken)">
+            <summary>
+            Use <see cref="M:Ar6yZuK.Habitica.HabiticaClient.GetAllTasksAsync(System.Threading.CancellationToken)"/> once per few seconds
+            </summary>
+            <exception cref="T:System.Net.Http.HttpRequestException"></exception>
+        </member>
+        <member name="M:Ar6yZuK.Habitica.HabiticaClient.ScoreUp(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Use <see cref="M:Ar6yZuK.Habitica.HabiticaClient.ScoreUp(System.Guid,System.Threading.CancellationToken)"/> once per 30 seconds
+            </summary>
+            <exception cref="T:System.Net.Http.HttpRequestException"></exception>
+        </member>
+        <member name="M:Ar6yZuK.Habitica.HabiticaClient.ScoreUp(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Use <see cref="M:Ar6yZuK.Habitica.HabiticaClient.ScoreUp(System.String,System.Threading.CancellationToken)"/> once per 30 seconds
+            </summary>
+            <exception cref="T:System.Net.Http.HttpRequestException"></exception>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:Ar6yZuK.Habitica.HabiticaClient.ScoreDown(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Use <see cref="M:Ar6yZuK.Habitica.HabiticaClient.ScoreDown(System.String,System.Threading.CancellationToken)"/> once per 30 seconds
+            </summary>
+            <exception cref="T:System.Net.Http.HttpRequestException"></exception>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="M:Ar6yZuK.Habitica.Response.Tasks.GetAllTasks.TaskData.ScoreUp(Ar6yZuK.Habitica.HabiticaClient,System.Threading.CancellationToken)">
+            <summary>
+            Use <see cref="M:Ar6yZuK.Habitica.Response.Tasks.GetAllTasks.TaskData.ScoreUp(Ar6yZuK.Habitica.HabiticaClient,System.Threading.CancellationToken)"/> once per 30 seconds
+            </summary>
+            <exception cref="T:System.Net.Http.HttpRequestException"></exception>
+        </member>
+    </members>
+</doc>

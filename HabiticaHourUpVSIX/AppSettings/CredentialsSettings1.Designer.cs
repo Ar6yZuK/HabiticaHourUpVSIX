@@ -13,11 +13,11 @@ namespace HabiticaHourUpVSIX.AppSettings {
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.6.0.0")]
-    public sealed partial class Settings1 : global::System.Configuration.ApplicationSettingsBase {
+    internal sealed partial class CredentialsSettings1 : global::System.Configuration.ApplicationSettingsBase {
         
-        private static Settings1 defaultInstance = ((Settings1)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings1())));
+        private static CredentialsSettings1 defaultInstance = ((CredentialsSettings1)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new CredentialsSettings1())));
         
-        public static Settings1 Default {
+        public static CredentialsSettings1 Default {
             get {
                 return defaultInstance;
             }
@@ -25,25 +25,25 @@ namespace HabiticaHourUpVSIX.AppSettings {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("00:00:00")]
-        public global::System.TimeSpan LastWorkTime {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string UserId {
             get {
-                return ((global::System.TimeSpan)(this["LastWorkTime"]));
+                return ((string)(this["UserId"]));
             }
             set {
-                this["LastWorkTime"] = value;
+                this["UserId"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int TotalTicks {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string APIKey {
             get {
-                return ((int)(this["TotalTicks"]));
+                return ((string)(this["APIKey"]));
             }
             set {
-                this["TotalTicks"] = value;
+                this["APIKey"] = value;
             }
         }
     }

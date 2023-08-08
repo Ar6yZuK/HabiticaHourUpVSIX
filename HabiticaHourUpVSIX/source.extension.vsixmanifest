@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" ?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="HabiticaHourUpVSIX.ade8e5f3-585d-49ca-8916-064b2237b928" Version="1.1" Language="en-US" Publisher="Ar6" />
+        <Identity Id="HabiticaHourUpVSIX.ade8e5f3-585d-49ca-8916-064b2237b928" Version="1.2.1" Language="en-US" Publisher="Ar6" />
         <DisplayName>HabiticaHourUpVSIX</DisplayName>
         <Description xml:space="preserve">Empty VSIX Project.</Description>
         <Icon>Resources\Icon.png</Icon>

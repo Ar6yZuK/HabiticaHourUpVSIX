@@ -5,6 +5,7 @@ global using Task = System.Threading.Tasks.Task;
 using HabiticaHourUpVSIX.AppSettings;
 using HabiticaHourUpVSIX.AppSettings.Abstractions;
 using HabiticaHourUpVSIX.AppSettings.Models;
+using HabiticaHourUpVSIX.ToolWindows;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Threading;
 using System.Runtime.InteropServices;
@@ -18,36 +19,42 @@ namespace HabiticaHourUpVSIX;
 [Guid(PackageGuids.HabiticaHourUpVSIXString)]
 //[ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOpening_string, PackageAutoLoadFlags.BackgroundLoad)]
 [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExistsAndNotBuildingAndNotDebugging_string, PackageAutoLoadFlags.BackgroundLoad)]
-[ProvideOptionPage(typeof(AppSettings.OptionsProvider.General1Options), "HabiticaHourUpVSIX", "General", 0, 0, true, SupportsProfiles = true)]
-[ProvideToolWindow(typeof(ToolWindow1.Pane))]
+[ProvideToolWindow(typeof(SettingsToolWindow.Pane))]
 public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 {
 	public SettingsWithSaving<HabiticaSettingsModel> HabiticaSettingsReader { get; private set; }
-	public SettingsWithSaving<UserSettingsModel> VSOptionsSettingsReader { get; private set; }
+	public SettingsWithSaving<HabiticaCredentials> CredentialsSettings { get; private set; }
+	public SettingsWithSaving<UserSettingsModel> UserSettingsReader { get; private set; }
 	public Settings<SessionSettingsModel> SessionSettingsReader { get; private set; }
-	public DateTime OpenTime { get; private set; }
+	public IHabiticaClient HabiticaClient { get; private set; }
 	public MyTimer Timer { get; private set; }
 	
-	public TimeSpan RealWorkTime => DateTime.Now - OpenTime;
-
 	protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
 	{
 		await this.RegisterCommandsAsync();
 		this.RegisterToolWindows();
 
-		OpenTime = DateTime.Now;
+		HabiticaClient = new HabiticaClient(this);
 
 		SessionSettingsReader = new SessionSettings();
+		CredentialsSettings = new CredentialsSettings();
 
-		VSOptionsSettingsReader = new VSOptionsSettings(JoinableTaskFactory);
-		VSOptionsSettingsReader.OnSaving += VSOptionsSettingsReader_OnSaving;
+		UserSettingsReader = new UserSettings();
+		UserSettingsReader.OnSaving += VSOptionsSettingsReader_OnSaving;
 
 		HabiticaSettingsReader = new HabiticaSettings();
-		HabiticaSettingsModel habiticaSettings = await HabiticaSettingsReader.ReadAsync();
+		HabiticaSettingsModel habiticaSettings = HabiticaSettingsReader.Read();
 
-		UserSettingsModel vsSettings = await VSOptionsSettingsReader.ReadAsync();
-		Timer = new MyTimer(habiticaSettings.LastTickAfter, vsSettings.Divisor);
+		UserSettingsModel vsSettings = UserSettingsReader.Read();
+
+		Timer = new MyTimer();
 		Timer.Tick += Tick;
+
+		TimeSpan tickAfter = habiticaSettings.LastTickAfter == TimeSpan.Zero ? vsSettings.Divisor : habiticaSettings.LastTickAfter;
+
+		Timer.Change(tickAfter, vsSettings.Divisor);
+
+		HabiticaSettingsReader.SetLastTickAfterWithSave(tickAfter);
 
 		await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 		VS.Events.SolutionEvents.OnAfterCloseSolution += OnClose;
@@ -56,9 +63,25 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 	private void Tick()
 	{
 		AddTicksToAllSettings(1);
+
+		var userSettingsModel = UserSettingsReader.Read();
+		if (userSettingsModel.IsAutoScoreUp)
+		{
+			JoinableTaskFactory.RunAsync(
+				async delegate
+				{
+					var scoreUpResult = await HabiticaClient.SendOneTickAsync();
+					if (scoreUpResult.TryPickT1(out var notSuccess, out _))
+					{
+						await VS.MessageBox.ShowErrorAsync("Habitica score up failure", $"{notSuccess.Error}:\n{notSuccess.Message}");
+						return;
+					}
+
+				}).FireAndForget();
+		}
 	}
 
-	private void VSOptionsSettingsReader_OnSaving(UserSettingsModel userSettingsModel) // UserSettingsModel(TimeSpan Divisor)
+	private void VSOptionsSettingsReader_OnSaving(UserSettingsModel userSettingsModel)
 	{
 		Timer.Change(Timer.NextTick, userSettingsModel.Divisor);
 	}
@@ -66,7 +89,6 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 	private void OnClose()
 	{
 		this.HabiticaSettingsReader.SetLastTickAfterWithSave(Timer.NextTick);
-		// TODO: Show window with send ticks to habitica
 	}
 
 	private void AddTicksToAllSettings(int addedTicks)

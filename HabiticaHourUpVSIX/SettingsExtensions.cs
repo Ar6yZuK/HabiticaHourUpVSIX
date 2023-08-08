@@ -14,8 +14,7 @@ public static class SettingsExtensions
 		obj1.Write(settingsToWrite);
 		obj1.Save();
 	}
-
-	public static void SetTicksWithSave(this SettingsWithSaving<HabiticaSettingsModel> obj1, int ticksToSet)
+	public static void SetTotalTicksWithSave(this SettingsWithSaving<HabiticaSettingsModel> obj1, int ticksToSet)
 	{
 		HabiticaSettingsModel settingsRead = obj1.Read();
 		var settingsToWrite = settingsRead with { TotalTicks = ticksToSet};
@@ -23,10 +22,35 @@ public static class SettingsExtensions
 		obj1.Write(settingsToWrite);
 		obj1.Save();
 	}
+	public static void ReduceTotalTicksWithSave(this SettingsWithSaving<HabiticaSettingsModel> obj1, int ticksToReduce)
+	{
+		HabiticaSettingsModel settingsRead = obj1.Read();
+		var settingsToWrite = settingsRead with { TotalTicks = settingsRead.TotalTicks - ticksToReduce };
+
+		obj1.Write(settingsToWrite);
+		obj1.Save();
+	}
+
 	public static void SetDivisorWithSave(this SettingsWithSaving<UserSettingsModel> obj1, TimeSpan divisorToSet)
 	{
 		UserSettingsModel settingsRead = obj1.Read();
 		var settingsToWrite = settingsRead with { Divisor = divisorToSet };
+
+		obj1.Write(settingsToWrite);
+		obj1.Save();
+	}
+	public static void SetAutoSend(this SettingsWithSaving<UserSettingsModel> obj1, bool autoScoreUpToSet)
+	{
+		UserSettingsModel settingsRead = obj1.Read();
+		var settingsToWrite = settingsRead with { IsAutoScoreUp = autoScoreUpToSet };
+
+		obj1.Write(settingsToWrite);
+		obj1.Save();
+	}
+	public static void SetTaskId(this SettingsWithSaving<UserSettingsModel> obj1, string taskIdToSet)
+	{
+		UserSettingsModel settingsRead = obj1.Read();
+		var settingsToWrite = settingsRead with { TaskIDToScoreUp = taskIdToSet };
 
 		obj1.Write(settingsToWrite);
 		obj1.Save();
@@ -38,5 +62,21 @@ public static class SettingsExtensions
 		var settingsToWrite = settingsRead with { Ticks = ticksToSet };
 
 		obj1.Write(settingsToWrite);
+	}
+	public static void SetUserIDWithSave(this SettingsWithSaving<HabiticaCredentials> obj1, string userId)
+	{
+		HabiticaCredentials settingsRead = obj1.Read();
+		var settingsToWrite = settingsRead with { UserId = userId };
+
+		obj1.Write(settingsToWrite);
+		obj1.Save();
+	}
+	public static void SetApiKeyWithSave(this SettingsWithSaving<HabiticaCredentials> obj1, string apiKey)
+	{
+		HabiticaCredentials settingsRead = obj1.Read();
+		var settingsToWrite = settingsRead with { ApiKey = apiKey };
+
+		obj1.Write(settingsToWrite);
+		obj1.Save();
 	}
 }

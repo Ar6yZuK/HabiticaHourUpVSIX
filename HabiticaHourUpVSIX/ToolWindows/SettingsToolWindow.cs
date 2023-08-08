@@ -1,15 +1,13 @@
-﻿using HabiticaHourUpVSIX.AppSettings.Abstractions;
-using HabiticaHourUpVSIX.AppSettings.Models;
-using Microsoft.VisualStudio.Imaging;
+﻿using Microsoft.VisualStudio.Imaging;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace HabiticaHourUpVSIX;
-public class ToolWindow1 : BaseToolWindow<ToolWindow1>
+namespace HabiticaHourUpVSIX.ToolWindows;
+public class SettingsToolWindow : BaseToolWindow<SettingsToolWindow>
 {
-	public override string GetTitle(int toolWindowId) => "Habitica Window";
+	public override string GetTitle(int toolWindowId) => "Settings";
 
 	public override Type PaneType => typeof(Pane);
 
