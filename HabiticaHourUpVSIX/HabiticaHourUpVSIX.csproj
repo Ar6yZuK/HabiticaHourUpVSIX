@@ -55,6 +55,7 @@
     <Compile Include="AppSettings\Models\HabiticaCredentials.cs" />
     <Compile Include="AppSettings\Models\HabiticaSettingsModel.cs" />
     <Compile Include="AppSettings\Models\SessionSettingsModel.cs" />
+    <Compile Include="Habitica\HabiticaClientAbstractions.cs" />
     <Compile Include="Validation\TimeSpanValidator.cs" />
     <Compile Include="AppSettings\SettingsAbstractions.cs" />
     <Compile Include="AppSettings\HabiticaSettings1.Designer.cs">
@@ -69,7 +70,7 @@
       <DependentUpon>UserSettings3.settings</DependentUpon>
     </Compile>
     <Compile Include="Commands\ShowSettingsCommand.cs" />
-    <Compile Include="HabiticaClient.cs" />
+    <Compile Include="Habitica\HabiticaClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HabiticaHourUpVSIXPackage.cs" />
     <Compile Include="AppSettings\Settings.cs" />

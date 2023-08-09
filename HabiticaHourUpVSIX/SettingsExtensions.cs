@@ -56,14 +56,29 @@ public static class SettingsExtensions
 		obj1.Save();
 	}
 
-	public static void SetTicks(this Settings<SessionSettingsModel> obj1, int ticksToSet)
+	public static void SetSessionTicks(this Settings<SessionSettingsModel> obj1, int ticksToSet)
 	{
 		SessionSettingsModel settingsRead = obj1.Read();
 		var settingsToWrite = settingsRead with { Ticks = ticksToSet };
 
 		obj1.Write(settingsToWrite);
 	}
-	public static void SetUserIDWithSave(this SettingsWithSaving<HabiticaCredentials> obj1, string userId)
+	public static void SetSessionTicksSent(this Settings<SessionSettingsModel> obj1, int ticksToSet)
+	{
+		SessionSettingsModel settingsRead = obj1.Read();
+		var settingsToWrite = settingsRead with { TicksSent = ticksToSet };
+
+		obj1.Write(settingsToWrite);
+	}
+    public static void AddSessionTicksSent(this Settings<SessionSettingsModel> obj1, int ticksToAdd)
+    {
+        SessionSettingsModel settingsRead = obj1.Read();
+        var settingsToWrite = settingsRead with { TicksSent = settingsRead.TicksSent + ticksToAdd };
+
+        obj1.Write(settingsToWrite);
+    }
+
+    public static void SetUserIDWithSave(this SettingsWithSaving<HabiticaCredentials> obj1, string userId)
 	{
 		HabiticaCredentials settingsRead = obj1.Read();
 		var settingsToWrite = settingsRead with { UserId = userId };

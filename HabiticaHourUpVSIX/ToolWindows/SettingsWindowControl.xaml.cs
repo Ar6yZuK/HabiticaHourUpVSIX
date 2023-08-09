@@ -11,6 +11,7 @@ namespace HabiticaHourUpVSIX;
 public partial class SettingsWindow : UserControl
 {
 	private readonly HabiticaHourUpVSIXPackage _package;
+	private readonly TimeSpanValidator _timeToTickValidator;
 
 	public int TotalTicks
 	{
@@ -20,10 +21,13 @@ public partial class SettingsWindow : UserControl
 	public int SessionTicks
 	{
 		get => _package.SessionSettingsReader.Read().Ticks;
-		set => _package.SessionSettingsReader.SetTicks(value);
+		set => _package.SessionSettingsReader.SetSessionTicks(value);
 	}
-
-	private readonly TimeSpanValidator _timeToTickValidator;
+	public int SessionTicksSent
+	{
+		get => _package.SessionSettingsReader.Read().TicksSent;
+		set => _package.SessionSettingsReader.SetSessionTicksSent(value);
+	}
 
 	public TimeSpan TimeToTick
 	{
@@ -71,6 +75,8 @@ public partial class SettingsWindow : UserControl
 		_package = habiticaHourUpVSIXPackage;
 
 		_package.HabiticaSettingsReader.OnSaving += Settings_OnSaving;
+
+		_package.HabiticaClient.OnSuccessfullySend += delegate { OnPropertyChanged(nameof(SessionTicksSent)); };
 
 		var maxTimeToTickValue = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
 		_timeToTickValidator = new(TimeToTick, minValue:TimeSpan.Zero, maxTimeToTickValue);

@@ -5,6 +5,7 @@ global using Task = System.Threading.Tasks.Task;
 using HabiticaHourUpVSIX.AppSettings;
 using HabiticaHourUpVSIX.AppSettings.Abstractions;
 using HabiticaHourUpVSIX.AppSettings.Models;
+using HabiticaHourUpVSIX.Habitica.Abstractions;
 using HabiticaHourUpVSIX.ToolWindows;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Threading;
@@ -26,7 +27,7 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 	public SettingsWithSaving<HabiticaCredentials> CredentialsSettings { get; private set; }
 	public SettingsWithSaving<UserSettingsModel> UserSettingsReader { get; private set; }
 	public Settings<SessionSettingsModel> SessionSettingsReader { get; private set; }
-	public IHabiticaClient HabiticaClient { get; private set; }
+	public HabiticaClientBase HabiticaClient { get; private set; }
 	public MyTimer Timer { get; private set; }
 	
 	protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
@@ -35,6 +36,8 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 		this.RegisterToolWindows();
 
 		HabiticaClient = new HabiticaClient(this);
+
+		HabiticaClient.OnSuccessfullySend += delegate { SessionSettingsReader.AddSessionTicksSent(1); };
 
 		SessionSettingsReader = new SessionSettings();
 		CredentialsSettings = new CredentialsSettings();
@@ -76,7 +79,6 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 						await VS.MessageBox.ShowErrorAsync("Habitica score up failure", $"{notSuccess.Error}:\n{notSuccess.Message}");
 						return;
 					}
-
 				}).FireAndForget();
 		}
 	}

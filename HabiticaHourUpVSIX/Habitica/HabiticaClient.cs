@@ -1,12 +1,14 @@
 ﻿using Ar6yZuK.Habitica.Response;
 using Ar6yZuK.Habitica.Response.Tasks;
 using HabiticaHourUpVSIX.AppSettings.Models;
+using HabiticaHourUpVSIX.Habitica.Abstractions;
+using Microsoft.VisualStudio.Threading;
 using OneOf;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace HabiticaHourUpVSIX;
-public class HabiticaClient : IHabiticaClient
+public class HabiticaClient : HabiticaClientBase
 {
 	private readonly HabiticaHourUpVSIXPackage _package;
 
@@ -15,14 +17,17 @@ public class HabiticaClient : IHabiticaClient
 		_package = package;
 	}
 
-	/// <exception cref="ArgumentException"></exception>
-	public async Task<OneOf<TaskScore.Root, NotSuccess.Root>> SendOneTickAsync(CancellationToken cancellationToken = default)
+	/// <exception cref="ArgumentException">On taskID is empty</exception>
+	public override async Task<OneOf<TaskScore.Root, NotSuccess.Root>> SendOneTickAsync(CancellationToken cancellationToken = default)
 	{
 		UserSettingsModel userSettingsRead = _package.UserSettingsReader.Read();
 		HabiticaCredentials credentials = _package.CredentialsSettings.Read();
 
 		using var client = new Ar6yZuK.Habitica.HabiticaClient(credentials);
 		var result = await ScoreUpInternalAsync(userSettingsRead.TaskIDToScoreUp, client, cancellationToken);
+
+		if (result.IsT0)
+			base.SendOneTickAsync().Forget();
 
 		return result;
 	}
@@ -35,18 +40,16 @@ public class HabiticaClient : IHabiticaClient
 		return success;
 	}
 }
-public class HabiticaClientNotSuccess : IHabiticaClient
+public class HabiticaClientNotSuccess : ISendTickToHabitica
 {
 	public Task<OneOf<TaskScore.Root, NotSuccess.Root>> SendOneTickAsync(CancellationToken cancellationToken = default)
 		=> Task.FromResult((OneOf<TaskScore.Root, NotSuccess.Root>)new NotSuccess.Root { Error = "NotAuthorized", Message = "There is no account that uses those credentials." });
 }
-public class HabiticaClientSuccess : IHabiticaClient
+public class HabiticaClientSuccess : HabiticaClientBase
 {
-	public Task<OneOf<TaskScore.Root, NotSuccess.Root>> SendOneTickAsync(CancellationToken cancellationToken = default)
-		=> Task.FromResult((OneOf<TaskScore.Root, NotSuccess.Root>)new TaskScore.Root { Success = true });
-}
-
-public interface IHabiticaClient
-{
-	Task<OneOf<TaskScore.Root, NotSuccess.Root>> SendOneTickAsync(CancellationToken cancellationToken = default);
+	public override Task<OneOf<TaskScore.Root, NotSuccess.Root>> SendOneTickAsync(CancellationToken cancellationToken = default)
+	{
+		base.SendOneTickAsync().Forget();
+		return Task.FromResult((OneOf<TaskScore.Root, NotSuccess.Root>)new TaskScore.Root { Success = true });
+	}
 }

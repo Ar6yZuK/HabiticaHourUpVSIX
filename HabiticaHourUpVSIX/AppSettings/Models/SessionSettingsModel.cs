@@ -2,8 +2,8 @@
 
 namespace HabiticaHourUpVSIX.AppSettings.Models;
 
-public record struct SessionSettingsModel(int Ticks);
-public record class SessionSettingsModelClass(int Ticks)
+public record struct SessionSettingsModel(int Ticks, int TicksSent);
+public record class SessionSettingsModelClass(int Ticks, int TicksSent)
 {
-	public static SessionSettingsModelClass Default { get; } = new SessionSettingsModelClass(0);
+	public static SessionSettingsModelClass Default { get; } = new SessionSettingsModelClass(0, 0);
 }
