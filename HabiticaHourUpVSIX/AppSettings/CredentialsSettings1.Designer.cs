@@ -12,7 +12,7 @@ namespace HabiticaHourUpVSIX.AppSettings {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.6.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.7.0.0")]
     internal sealed partial class CredentialsSettings1 : global::System.Configuration.ApplicationSettingsBase {
         
         private static CredentialsSettings1 defaultInstance = ((CredentialsSettings1)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new CredentialsSettings1())));
@@ -38,12 +38,12 @@ namespace HabiticaHourUpVSIX.AppSettings {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string APIKey {
+        public string ApiKey {
             get {
-                return ((string)(this["APIKey"]));
+                return ((string)(this["ApiKey"]));
             }
             set {
-                this["APIKey"] = value;
+                this["ApiKey"] = value;
             }
         }
     }

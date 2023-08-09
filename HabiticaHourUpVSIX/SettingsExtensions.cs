@@ -9,7 +9,7 @@ public static class SettingsExtensions
 	public static void SetLastTickAfterWithSave(this SettingsWithSaving<HabiticaSettingsModel> obj1, TimeSpan lastTickToSet)
 	{
 		HabiticaSettingsModel settingsRead = obj1.Read();
-		var settingsToWrite = settingsRead with { LastTickAfter = lastTickToSet };
+		var settingsToWrite = settingsRead with { LastWorkTime = lastTickToSet };
 
 		obj1.Write(settingsToWrite);
 		obj1.Save();
