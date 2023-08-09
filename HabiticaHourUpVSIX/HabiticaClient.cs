@@ -32,7 +32,6 @@ public class HabiticaClient : IHabiticaClient
 		if (scoreUpResult.TryPickT1(out NotSuccess.Root notSuccess, out var success))
 			return notSuccess;
 
-		_package.HabiticaSettingsReader.ReduceTotalTicksWithSave(-1);
 		return success;
 	}
 }
