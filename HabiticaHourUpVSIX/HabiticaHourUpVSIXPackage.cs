@@ -53,7 +53,7 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 		Timer = new MyTimer();
 		Timer.Tick += Tick;
 
-		TimeSpan tickAfter = habiticaSettings.LastWorkTime == TimeSpan.Zero ? vsSettings.Divisor : habiticaSettings.LastWorkTime;
+		TimeSpan tickAfter = habiticaSettings.LastWorkTime <= TimeSpan.Zero ? vsSettings.Divisor : habiticaSettings.LastWorkTime;
 
 		Timer.Change(tickAfter, vsSettings.Divisor);
 

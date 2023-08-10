@@ -12,6 +12,7 @@ public partial class SettingsWindow : UserControl
 {
 	private readonly HabiticaHourUpVSIXPackage _package;
 	private readonly TimeSpanValidator _timeToTickValidator;
+	private readonly TimeSpanValidator _divisorValidator;
 
 	public int TotalTicks
 	{
@@ -42,7 +43,11 @@ public partial class SettingsWindow : UserControl
 	public TimeSpan Divisor
 	{
 		get => _package.UserSettingsReader.Read().Divisor;
-		set => _package.UserSettingsReader.SetDivisorWithSave(value);
+		set
+		{
+			_divisorValidator.Value = value;
+			_package.UserSettingsReader.SetDivisorWithSave(_divisorValidator.Value);
+		}
 	}
 
 	public bool IsAutoScoreUp
@@ -80,6 +85,8 @@ public partial class SettingsWindow : UserControl
 
 		var maxTimeToTickValue = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
 		_timeToTickValidator = new(TimeToTick, minValue:TimeSpan.Zero, maxTimeToTickValue);
+		var maxDivisorValue = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
+		_divisorValidator = new(Divisor, minValue: TimeSpan.FromSeconds(30), maxValue: maxDivisorValue);
 
 		InitializeComponent();
 
