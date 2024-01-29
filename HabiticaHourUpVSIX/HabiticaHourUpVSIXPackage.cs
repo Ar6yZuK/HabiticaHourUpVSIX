@@ -29,7 +29,9 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 	public Settings<SessionSettingsModel> SessionSettingsReader { get; private set; }
 	public HabiticaClientBase HabiticaClient { get; private set; }
 	public MyTimer Timer { get; private set; }
-	
+
+	public event Action<bool>? ShowErrorChangedEvent;
+
 	protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
 	{
 		await this.RegisterCommandsAsync();
@@ -73,11 +75,33 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 			JoinableTaskFactory.RunAsync(
 				async delegate
 				{
-					var scoreUpResult = await HabiticaClient.SendOneTickAsync();
-					if (scoreUpResult.TryPickT1(out var notSuccess, out _))
+					const string ErrorTitleMessage = "Habitica score up failure\nPress cancel for do not show error again";
+
+					// Set as no have error
+					VSConstants.MessageBoxResult? mboxResult = null;
+					try
 					{
-						await VS.MessageBox.ShowErrorAsync("Habitica score up failure", $"{notSuccess.Error}:\n{notSuccess.Message}");
-						return;
+						var scoreUpResult = await HabiticaClient.SendOneTickAsync();
+						if (scoreUpResult.TryPickT1(out var notSuccess, out _) && SessionSettingsReader.Read().ShowError)
+						{
+							mboxResult = await VS.MessageBox.ShowErrorAsync(ErrorTitleMessage, $"{notSuccess.Error}:\n{notSuccess.Message}");
+							return;
+						}
+					}
+					catch (Exception ex) when(SessionSettingsReader.Read().ShowError)
+					{
+						mboxResult = await VS.MessageBox.ShowErrorAsync(ErrorTitleMessage + "\nError will logged in output\nMaybe error with internet connection", ex.ToString());
+						throw;
+					}
+					finally
+					{
+						if(mboxResult is VSConstants.MessageBoxResult.IDCANCEL)
+						{
+							SessionSettingsReader.SetShowError(false);
+							// Use SetShowErrorAndNotify for notify SettingsWindow about changes
+							// TODO: Maybe change Settings class, adding event about changing property.
+							SetShowErrorAndNotify(false);
+						}
 					}
 				}).FireAndForget();
 		}
@@ -104,5 +128,11 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 		SessionSettingsReader.Write(sessionSettingsToWrite);
 
 		HabiticaSettingsReader.Save();
+	}
+
+	public void SetShowErrorAndNotify(bool newValue)
+	{
+		SessionSettingsReader.SetShowError(newValue);
+		ShowErrorChangedEvent?.Invoke(newValue);
 	}
 }

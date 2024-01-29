@@ -12,60 +12,67 @@
 			 toolkit:Themes.UseVsTheme="True"
 			 mc:Ignorable="d"
 			 d:DesignHeight="330"
-			 d:DesignWidth="300"
+			 d:DesignWidth="327"
 			 Name="MyToolWindow"
+			 xmlns:local="clr-namespace:HabiticaHourUpVSIX"
 			 >
 
-	<Grid Focusable="True">
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="auto"/>
-			<ColumnDefinition Width="*"/>
-		</Grid.ColumnDefinitions>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="36"/>
-			<RowDefinition Height="36"/>
-			<RowDefinition Height="36"/>
-			<RowDefinition Height="36"/>
-			<RowDefinition Height="36"/>
-			<RowDefinition Height="36"/>
-			<RowDefinition Height="36"/>
-			<RowDefinition Height="36"/>
-			<RowDefinition Height="36"/>
-		</Grid.RowDefinitions>
-
-		<Label Content="Total Ticks" DockPanel.Dock="Top" Grid.Row="0"/>
-		<TextBox Text="{Binding TotalTicks}" Grid.Row="0" Grid.Column="1"/>
-
-		<Label Content="Session Ticks" Grid.Row="1"/>
-		<TextBox Text="{Binding SessionTicks}" Grid.Row="1" Grid.Column="1"/>
-
-		<Label Content="Ticks sent on session" Grid.Row="2"/>
-		<TextBox Text="{Binding SessionTicksSent}" Grid.Row="2" Grid.Column="1"/>
-
-		<Label Content="Time To Tick" Grid.Row="3"/>
-		<Grid Grid.Row="3" Grid.Column="1">
+	<ScrollViewer>
+		<Grid Focusable="True" d:DataContext="{d:DesignInstance Type=local:SettingsWindow}">
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="*"/>
 				<ColumnDefinition Width="auto"/>
+				<ColumnDefinition Width="*"/>
 			</Grid.ColumnDefinitions>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="36"/>
+				<RowDefinition Height="36"/>
+				<RowDefinition Height="36"/>
+				<RowDefinition Height="36"/>
+				<RowDefinition Height="36"/>
+				<RowDefinition Height="36"/>
+				<RowDefinition Height="36"/>
+				<RowDefinition Height="36"/>
+				<RowDefinition Height="36"/>
+				<RowDefinition Height="36"/>
+			</Grid.RowDefinitions>
 
-			<TextBox Text="{Binding TimeToTick}" IsReadOnly="{Binding TimeToTickEditReverse}"/>
-			<Button Content="Show" Grid.Column="1" Command="{Binding ShowTimeToTickCommand}" Margin="3.45"/>
+			<Label Content="Total Ticks" DockPanel.Dock="Top" Grid.Row="0"/>
+			<TextBox Text="{Binding TotalTicks}" Grid.Row="0" Grid.Column="1"/>
+
+			<Label Content="Session Ticks" Grid.Row="1"/>
+			<TextBox Text="{Binding SessionTicks}" Grid.Row="1" Grid.Column="1"/>
+
+			<Label Content="Ticks sent on session" Grid.Row="2"/>
+			<TextBox Text="{Binding SessionTicksSent}" Grid.Row="2" Grid.Column="1"/>
+
+			<Label Content="Time To Tick" Grid.Row="3"/>
+			<Grid Grid.Row="3" Grid.Column="1">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="auto"/>
+				</Grid.ColumnDefinitions>
+
+				<TextBox Text="{Binding TimeToTick}" IsReadOnly="{Binding TimeToTickEditReverse}"/>
+				<Button Content="Show" Grid.Column="1" Command="{Binding ShowTimeToTickCommand}" Margin="3.45"/>
+			</Grid>
+
+			<Label Content="Divisor" Grid.Row="4"/>
+			<TextBox Text="{Binding Divisor}" Grid.Row="4" Grid.Column="1"/>
+
+			<Label Content="Habitica User ID" Grid.Row="5"/>
+			<PasswordBox x:Name="HabiticaUserIdPasswordBox" Grid.Row="5" Grid.Column="1"/>
+
+			<Label Content="Habitica API-Key" Grid.Row="6"/>
+			<PasswordBox x:Name="HabiticaApiKeyPasswordBox" Grid.Row="6" Grid.Column="1"/>
+
+			<Label Content="Task ID to ScoreUp" Grid.Row="7"/>
+			<TextBox Name="TaskToScoreUpTextBox" Text="{Binding TaskIdToScoreUp}" Grid.Row="7" Grid.Column="1"/>
+
+			<Label Content="Auto send on tick" Grid.Row="8"/>
+			<CheckBox IsChecked="{Binding IsAutoScoreUp}" Grid.Row="8" Grid.Column="1"/>
+
+			<Label Content="Show error on habitica score up failure" Grid.Row="9"/>
+			<CheckBox IsChecked="{Binding SessionShowError}" Grid.Row="9" Grid.Column="1"/>
 		</Grid>
-
-		<Label Content="Divisor" Grid.Row="4"/>
-		<TextBox Text="{Binding Divisor}" Grid.Row="4" Grid.Column="1"/>
-
-		<Label Content="Habitica User ID" Grid.Row="5"/>
-		<PasswordBox x:Name="HabiticaUserIdPasswordBox" Grid.Row="5" Grid.Column="1"/>
-
-		<Label Content="Habitica API-Key" Grid.Row="6"/>
-		<PasswordBox x:Name="HabiticaApiKeyPasswordBox" Grid.Row="6" Grid.Column="1"/>
-
-		<Label Content="Task ID to ScoreUp" Grid.Row="7"/>
-		<TextBox Name="TaskToScoreUpTextBox" Text="{Binding TaskIdToScoreUp}" Grid.Row="7" Grid.Column="1"/>
-		
-		<Label Content="Auto send on tick" Grid.Row="8"/>
-		<CheckBox IsChecked="{Binding IsAutoScoreUp}" Grid.Row="8" Grid.Column="1"/>
-	</Grid>
+	</ScrollViewer>
 </UserControl>

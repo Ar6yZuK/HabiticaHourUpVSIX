@@ -70,15 +70,22 @@ public static class SettingsExtensions
 
 		obj1.Write(settingsToWrite);
 	}
-    public static void AddSessionTicksSent(this Settings<SessionSettingsModel> obj1, int ticksToAdd)
-    {
-        SessionSettingsModel settingsRead = obj1.Read();
-        var settingsToWrite = settingsRead with { TicksSent = settingsRead.TicksSent + ticksToAdd };
+	public static void AddSessionTicksSent(this Settings<SessionSettingsModel> obj1, int ticksToAdd)
+	{
+		SessionSettingsModel settingsRead = obj1.Read();
+		var settingsToWrite = settingsRead with { TicksSent = settingsRead.TicksSent + ticksToAdd };
 
-        obj1.Write(settingsToWrite);
-    }
+		obj1.Write(settingsToWrite);
+	}
+	public static void SetShowError(this Settings<SessionSettingsModel> obj1, bool showError)
+	{
+		SessionSettingsModel settingsRead = obj1.Read();
+		var settingsToWrite = settingsRead with { ShowError = showError };
 
-    public static void SetUserIDWithSave(this SettingsWithSaving<HabiticaCredentials> obj1, string userId)
+		obj1.Write(settingsToWrite);
+	}
+
+	public static void SetUserIDWithSave(this SettingsWithSaving<HabiticaCredentials> obj1, string userId)
 	{
 		HabiticaCredentials settingsRead = obj1.Read();
 		var settingsToWrite = settingsRead with { UserId = userId };

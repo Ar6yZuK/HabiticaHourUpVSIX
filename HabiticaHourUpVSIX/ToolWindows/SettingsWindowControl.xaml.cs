@@ -1,18 +1,20 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using HabiticaHourUpVSIX.AppSettings.Models;
+using Microsoft.VisualStudio.Text.Editor;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 #nullable enable
 
 namespace HabiticaHourUpVSIX;
-[INotifyPropertyChanged]
-public partial class SettingsWindow : UserControl
+public partial class SettingsWindow : UserControl, INotifyPropertyChanged
 {
 	private readonly HabiticaHourUpVSIXPackage _package;
 	private readonly TimeSpanValidator _timeToTickValidator;
 	private readonly TimeSpanValidator _divisorValidator;
+
+	public event PropertyChangedEventHandler? PropertyChanged;
 
 	public int TotalTicks
 	{
@@ -28,6 +30,11 @@ public partial class SettingsWindow : UserControl
 	{
 		get => _package.SessionSettingsReader.Read().TicksSent;
 		set => _package.SessionSettingsReader.SetSessionTicksSent(value);
+	}
+	public bool SessionShowError
+	{
+		get => _package.SessionSettingsReader.Read().ShowError;
+		set => _package.SetShowErrorAndNotify(value);
 	}
 
 	public TimeSpan TimeToTick
@@ -57,7 +64,7 @@ public partial class SettingsWindow : UserControl
 		{
 			if (value)
 				if (HabiticaUserIdPasswordBox.Password.Length is 0
-					|| HabiticaApiKeyPasswordBox.Password.Length is 0 
+					|| HabiticaApiKeyPasswordBox.Password.Length is 0
 					|| TaskIdToScoreUp.Length is 0)
 				{
 					VS.MessageBox.ShowError($"Please set task ID, Habitica user ID, and Habitica user API-key.");
@@ -83,8 +90,10 @@ public partial class SettingsWindow : UserControl
 
 		_package.HabiticaClient.OnSuccessfullySend += delegate { OnPropertyChanged(nameof(SessionTicksSent)); };
 
+		_package.ShowErrorChangedEvent += x => OnPropertyChanged(nameof(SessionShowError));
+
 		var maxTimeToTickValue = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
-		_timeToTickValidator = new(TimeToTick, minValue:TimeSpan.Zero, maxTimeToTickValue);
+		_timeToTickValidator = new(TimeToTick, minValue: TimeSpan.Zero, maxTimeToTickValue);
 		var maxDivisorValue = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
 		_divisorValidator = new(Divisor, minValue: TimeSpan.FromSeconds(30), maxValue: maxDivisorValue);
 
@@ -97,28 +106,32 @@ public partial class SettingsWindow : UserControl
 		HabiticaApiKeyPasswordBox.PasswordChanged += HabiticaApiKeyPasswordBox_PasswordChanged;
 		HabiticaUserIdPasswordBox.PasswordChanged += HabiticaUserIdPasswordBox_PasswordChanged;
 	}
-	
+
 	private void HabiticaUserIdPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
 	{
 		var passwordBox = (PasswordBox)sender;
-		var userID = passwordBox.Password;
+		string userID = passwordBox.Password;
 		_package.CredentialsSettings.SetUserIDWithSave(userID);
 	}
 
 	private void HabiticaApiKeyPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
 	{
 		var passwordBox = (PasswordBox)sender;
-		var apiKey = passwordBox.Password;
+		string apiKey = passwordBox.Password;
 		_package.CredentialsSettings.SetApiKeyWithSave(apiKey);
 	}
 
 	private void Settings_OnSaving(HabiticaSettingsModel arg)
 	{
-		this.OnPropertyChanged(nameof(TotalTicks));
-		this.OnPropertyChanged(nameof(SessionTicks));
+		OnPropertyChanged(nameof(TotalTicks));
+		OnPropertyChanged(nameof(SessionTicks));
 	}
 
 	[RelayCommand]
 	private void ShowTimeToTick()
 		=> OnPropertyChanged(nameof(TimeToTick));
+
+
+	protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+		=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }
