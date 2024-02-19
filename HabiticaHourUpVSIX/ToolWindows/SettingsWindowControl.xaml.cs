@@ -31,10 +31,11 @@ public partial class SettingsWindow : UserControl, INotifyPropertyChanged
 		get => _package.SessionSettingsReader.Read().TicksSent;
 		set => _package.SessionSettingsReader.SetSessionTicksSent(value);
 	}
-	public bool SessionShowError
+	public bool ShowErrorOnFailure
 	{
-		get => _package.SessionSettingsReader.Read().ShowError;
-		set => _package.SetShowErrorAndNotify(value);
+		get => _package.UserSettingsReader.Read().ShowErrorOnFailure;
+		// On notify it reads on get
+		set => _package.UserSettingsReader.SetShowErrorOnFailureWithSave(value);
 	}
 
 	public TimeSpan TimeToTick
@@ -90,7 +91,7 @@ public partial class SettingsWindow : UserControl, INotifyPropertyChanged
 
 		_package.HabiticaClient.OnSuccessfullySend += delegate { OnPropertyChanged(nameof(SessionTicksSent)); };
 
-		_package.ShowErrorChangedEvent += x => OnPropertyChanged(nameof(SessionShowError));
+		_package.UserSettingsReader.OnSaving += delegate { OnPropertyChanged(nameof(ShowErrorOnFailure)); };
 
 		var maxTimeToTickValue = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
 		_timeToTickValidator = new(TimeToTick, minValue: TimeSpan.Zero, maxTimeToTickValue);

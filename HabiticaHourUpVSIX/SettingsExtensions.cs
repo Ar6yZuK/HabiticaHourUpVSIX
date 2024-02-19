@@ -77,12 +77,13 @@ public static class SettingsExtensions
 
 		obj1.Write(settingsToWrite);
 	}
-	public static void SetShowError(this Settings<SessionSettingsModel> obj1, bool showError)
+	public static void SetShowErrorOnFailureWithSave(this SettingsWithSaving<UserSettingsModel> obj1, bool showError)
 	{
-		SessionSettingsModel settingsRead = obj1.Read();
-		var settingsToWrite = settingsRead with { ShowError = showError };
+		var settingsRead = obj1.Read();
+		var settingsToWrite = settingsRead with { ShowErrorOnFailure = showError };
 
 		obj1.Write(settingsToWrite);
+		obj1.Save();
 	}
 
 	public static void SetUserIDWithSave(this SettingsWithSaving<HabiticaCredentials> obj1, string userId)

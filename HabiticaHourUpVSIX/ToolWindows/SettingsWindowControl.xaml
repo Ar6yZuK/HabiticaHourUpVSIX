@@ -11,7 +11,7 @@
 			 xmlns:toolkit="clr-namespace:Community.VisualStudio.Toolkit;assembly=Community.VisualStudio.Toolkit"
 			 toolkit:Themes.UseVsTheme="True"
 			 mc:Ignorable="d"
-			 d:DesignHeight="330"
+			 d:DesignHeight="370"
 			 d:DesignWidth="327"
 			 Name="MyToolWindow"
 			 xmlns:local="clr-namespace:HabiticaHourUpVSIX"
@@ -72,7 +72,7 @@
 			<CheckBox IsChecked="{Binding IsAutoScoreUp}" Grid.Row="8" Grid.Column="1"/>
 
 			<Label Content="Show error on habitica score up failure" Grid.Row="9"/>
-			<CheckBox IsChecked="{Binding SessionShowError}" Grid.Row="9" Grid.Column="1"/>
+			<CheckBox IsChecked="{Binding ShowErrorOnFailure}" Grid.Row="9" Grid.Column="1"/>
 		</Grid>
 	</ScrollViewer>
 </UserControl>

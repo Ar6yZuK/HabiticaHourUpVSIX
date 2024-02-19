@@ -12,7 +12,7 @@ namespace HabiticaHourUpVSIX.AppSettings {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.6.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.9.0.0")]
     internal sealed partial class UserSettings3 : global::System.Configuration.ApplicationSettingsBase {
         
         private static UserSettings3 defaultInstance = ((UserSettings3)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new UserSettings3())));
@@ -56,6 +56,18 @@ namespace HabiticaHourUpVSIX.AppSettings {
             }
             set {
                 this["IsAutoScoreUp"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowErrorOnFailure {
+            get {
+                return ((bool)(this["ShowErrorOnFailure"]));
+            }
+            set {
+                this["ShowErrorOnFailure"] = value;
             }
         }
     }
