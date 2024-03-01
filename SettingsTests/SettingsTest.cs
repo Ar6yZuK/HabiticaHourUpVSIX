@@ -1,62 +1,105 @@
 using HabiticaHourUpVSIX.AppSettings.Abstractions;
-using HabiticaHourUpVSIX.AppSettings.Models;
+using Microsoft.Win32;
+using System.Reflection;
 
 namespace SettingsTests;
-
 public class Tests
 {
-	[Test]
-	public void SessionTest()
+	private static IEnumerable<Assembly> GetTestingAssembly()
 	{
-		// Cant be test because settings are internal
-		throw new NotImplementedException();
-		SettingsWithSaving<object, SessionSettingsModel> settings = null!;
+		yield return GetVSIXAssembly();
+		yield return GetUnitTestAssembly();
 
-		//var settings = new SessionSettings();
+		Assembly GetVSIXAssembly() => typeof(HabiticaHourUpVSIX.HabiticaHourUpVSIXPackage).Assembly;
+		Assembly GetUnitTestAssembly() => typeof(Tests).Assembly;
+	}
 
-		bool invoked = false;
+	[Theory]
+	public void DoBothArgumentsOfGenerics_SettingsWithSaving_ContainProperties([ValueSource(nameof(GetTestingAssembly))] Assembly assembly)
+	{
+		// Get types from assembly that derived from SettingsWithSaving<TSource, TDest>
+		Type[] settingsTypes = GetDerivedFromSettingsTypes(inAssembly: assembly);
+		(string? source, string propertyName, bool contains)[] result = AllPropertiesInTDestAreContainedInTSource(settingsTypes);
 
-		SessionSettingsModel read = settings.Read();
-		SessionSettingsModel valueToWrite = new(1);
-		settings.Write(valueToWrite);
-		SessionSettingsModel read2 = settings.Read();
+		Assert.That(result,
+			Is.All.Matches(((string, string, bool contains) x) => x.contains),
+			message:"(source type in which no contains propertyName, string propertyName, bool contains)");
 
-		Assert.Multiple(() =>
+		static Type[] GetDerivedFromSettingsTypes(Assembly inAssembly)
 		{
-			Assert.That(invoked);
-			Assert.That(read, Is.EqualTo(default(SessionSettingsModel)));
-			Assert.That(read2, Is.EqualTo(valueToWrite));
-		});
+			var types = inAssembly.DefinedTypes.Where(x =>
+			{
+				if (x.BaseType is null)
+					return false;
+
+				if (!x.BaseType.IsGenericType)
+					return false;
+
+				return x.BaseType.GetGenericTypeDefinition().Equals(typeof(SettingsWithSaving<,>));
+			});
+
+			var baseTypes = types.Select(x => x.BaseType!)
+				.Where(t =>
+				{
+					var type = typeof(SettingsWithSaving<,>);
+
+					return t.GetGenericTypeDefinition().Equals(type);
+				});
+
+			return baseTypes.ToArray();
+		}
+
+		static (string? source, string propertyName, bool contains)[] AllPropertiesInTDestAreContainedInTSource(Type[] settingsTypes)
+			=> settingsTypes.SelectMany(t =>
+				{
+					var generics = t.GetGenericArguments();
+					var generic1 = generics[0];
+					var generic2 = generics[1];
+
+					var properties1 = generic1.GetProperties()
+						.Select(x => x.Name).ToArray();
+					var properties2 = generic2.GetProperties()
+						.Select(x => x.Name).ToArray();
+
+					return properties2.Select(
+							x => (source: generic1.FullName, propertyName: $"{generic2.FullName}.{x}", contains: properties1.Contains(x))
+							);
+				}).ToArray();
 	}
 
 	[Test]
-	public void TestAddTicks()
+	public void TestSet()
 	{
-		// Cant be test because settings are internal
-		throw new NotImplementedException();
-		SettingsWithSaving<object, HabiticaSettingsModel> settings = null!;
+		const int value = 2;
 
-		//var settings = new HabiticaSettings();
+		var test = new TestingSettings();
+		Assert.That(test.Test.IntProperty, Is.Not.EqualTo(value));
 
-		bool invoked = false;
-		settings.OnSaving += x => { invoked = true; Console.WriteLine(x); };
+		test.SetWithSave(x => x.IntProperty, value);
 
-		HabiticaSettingsModel settingsRead = settings.Read();
-		HabiticaSettingsModel settingsToWrite = settingsRead with { TotalTicks = settingsRead.TotalTicks + 1 };
-		settings.Write(settingsToWrite);
-		settings.Save();
-		HabiticaSettingsModel settingsRead2 = settings.Read();
+		Assert.That(test.Test.IntProperty, Is.EqualTo(value));
+	}
 
-		Assert.Multiple(() =>
-		{
-			Assert.That(invoked);
-			Assert.That(settingsRead, Is.EqualTo(default(HabiticaSettingsModel)));
-			Assert.That(settingsRead2, Is.EqualTo(settingsToWrite));
-		});
+	// For debug testing. May be deleted
+	//[Test]
+	public void TestSetCache()
+	{
+		const int value = 2;
 
-		settings.Write(default);
-		settings.Save();
+		var test = new TestingSettings();
+		Assert.That(test.Test.IntProperty, Is.Not.EqualTo(value));
+
+		test.SetWithSave(x => x.IntProperty, value);
+		test.SetWithSave(x => x.IntProperty, value);
+
+		Assert.That(test.Test.IntProperty, Is.EqualTo(value));
 	}
 }
-public record struct Test(int W);
-public record class TestClass(int W);
+public record struct Test(int IntProperty);
+public record class TestClass(int IntProperty);
+
+class TestingSettings : SettingsWithSaving<TestClass, Test>
+{
+	public TestClass Test = new(0);
+	protected override TestClass Source => Test;
+}

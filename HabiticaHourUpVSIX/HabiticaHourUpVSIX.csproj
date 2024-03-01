@@ -55,7 +55,9 @@
     <Compile Include="AppSettings\Models\HabiticaCredentials.cs" />
     <Compile Include="AppSettings\Models\HabiticaSettingsModel.cs" />
     <Compile Include="AppSettings\Models\SessionSettingsModel.cs" />
+    <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="Habitica\HabiticaClientAbstractions.cs" />
+    <Compile Include="IAudioPlayer.cs" />
     <Compile Include="Validation\TimeSpanValidator.cs" />
     <Compile Include="AppSettings\SettingsAbstractions.cs" />
     <Compile Include="AppSettings\HabiticaSettings1.Designer.cs">
@@ -106,6 +108,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>UserSettings3.Designer.cs</LastGenOutput>
     </None>
+    <Compile Include="SettingsExtensions_v2.cs" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
       <Generator>VsixManifestGenerator</Generator>
@@ -161,7 +164,17 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.0.5232" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <COMReference Include="WMPLib">
+      <Guid>{6BF52A50-394A-11D3-B153-00C04F79FAA6}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
   <ItemGroup>
     <Page Include="ToolWindows\SettingsWindowControl.xaml">
       <SubType>Designer</SubType>

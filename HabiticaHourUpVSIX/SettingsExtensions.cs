@@ -4,7 +4,7 @@ using HabiticaHourUpVSIX.AppSettings.Models;
 namespace HabiticaHourUpVSIX;
 
 // Need read before write, because there may be data that needs to be left untouched
-public static class SettingsExtensions
+public static partial class SettingsExtensions
 {
 	public static void SetLastTickAfterWithSave(this SettingsWithSaving<HabiticaSettingsModel> obj1, TimeSpan lastTickToSet)
 	{
