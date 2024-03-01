@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using HabiticaHourUpVSIX.AppSettings.Models;
-using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.Win32;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -63,23 +63,43 @@ public partial class SettingsWindow : UserControl, INotifyPropertyChanged
 		get => _package.UserSettingsReader.Read().IsAutoScoreUp;
 		set
 		{
-			if (value)
-				if (HabiticaUserIdPasswordBox.Password.Length is 0
+			if (value && (HabiticaUserIdPasswordBox.Password.Length is 0
 					|| HabiticaApiKeyPasswordBox.Password.Length is 0
 					|| TaskIdToScoreUp.Length is 0)
-				{
-					VS.MessageBox.ShowError($"Please set task ID, Habitica user ID, and Habitica user API-key.");
-					return;
-				}
+				)
+			{
+				VS.MessageBox.ShowError($"Please set task ID, Habitica user ID, and Habitica user API-key.");
+				return;
+			}
 
 			_package.UserSettingsReader.SetAutoSend(value);
 		}
 	}
-
 	public string TaskIdToScoreUp
 	{
 		get => _package.UserSettingsReader.Read().TaskIDToScoreUp;
 		set => _package.UserSettingsReader.SetTaskId(value);
+	}
+
+	public bool BeepOnSuccess
+	{
+		get => _package.UserSettingsReader.Read().BeepOnSuccess;
+		set
+		{
+			if (value && string.IsNullOrEmpty(OnBeepAudioPath))
+			{
+				// Hardcode string, maybe later create custom control with property "Description"
+				VS.MessageBox.ShowError("Please at first set beep-audio file path.");
+				return;
+			}
+
+			_package.UserSettingsReader.SetWithSave(x => x.BeepOnSuccess, value);
+		}
+	}
+	public string OnBeepAudioPath
+	{
+		get => _package.UserSettingsReader.Read().BeepAudioPath;
+		set => _package.UserSettingsReader.SetWithSave(x => x.BeepAudioPath, value);
 	}
 
 	public SettingsWindow(HabiticaHourUpVSIXPackage habiticaHourUpVSIXPackage)
@@ -131,7 +151,24 @@ public partial class SettingsWindow : UserControl, INotifyPropertyChanged
 	[RelayCommand]
 	private void ShowTimeToTick()
 		=> OnPropertyChanged(nameof(TimeToTick));
+	[RelayCommand]
+	private void GetAudioBeepPathDialog()
+	{
+		var dialog = new OpenFileDialog
+		{
+			Multiselect = false,
+			// Example: "Файлы рисунков (*.bmp, *.jpg)|*.bmp;*.jpg|Все файлы (*.*)|*.*"
+			// If you need to empty description, set space before '|' otherwise you got empty file name.
+			Filter = " |*.wav;*.mp3"
+		};
 
+		// ShowDialog return nullable bool
+		if (dialog.ShowDialog() is true)
+		{
+			OnBeepAudioPath = dialog.FileName;
+			OnPropertyChanged(nameof(OnBeepAudioPath));
+		}
+	}
 
 	protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 		=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

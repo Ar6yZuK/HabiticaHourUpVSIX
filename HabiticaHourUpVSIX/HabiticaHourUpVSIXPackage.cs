@@ -23,12 +23,14 @@ namespace HabiticaHourUpVSIX;
 [ProvideToolWindow(typeof(SettingsToolWindow.Pane))]
 public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 {
+	private IAudioPlayer _soundPlayer;
+
 	public SettingsWithSaving<HabiticaSettingsModel> HabiticaSettingsReader { get; private set; }
 	public SettingsWithSaving<HabiticaCredentials> CredentialsSettings { get; private set; }
 	public SettingsWithSaving<UserSettingsModel> UserSettingsReader { get; private set; }
 	public Settings<SessionSettingsModel> SessionSettingsReader { get; private set; }
 	public HabiticaClientBase HabiticaClient { get; private set; }
-	public MyTimer Timer { get; private set; }
+	public ITimer Timer { get; private set; }
 
 	protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
 	{
@@ -36,8 +38,21 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 		this.RegisterToolWindows();
 
 		HabiticaClient = new HabiticaClient(this);
+		_soundPlayer = new AudioPlayer();
 
 		HabiticaClient.OnSuccessfullySend += delegate { SessionSettingsReader.AddSessionTicksSent(1); };
+		HabiticaClient.OnSuccessfullySend += delegate
+		{
+			var userSettings = UserSettingsReader.Read();
+			if (!userSettings.BeepOnSuccess)
+				return;
+
+			SetMusicPathIfNull(userSettings.BeepAudioPath);
+			_soundPlayer.Play();
+
+			void SetMusicPathIfNull(string beepMusicPath)
+				=> _soundPlayer.AudioPath = string.IsNullOrEmpty(_soundPlayer.AudioPath) ? beepMusicPath : _soundPlayer.AudioPath;
+		};
 
 		SessionSettingsReader = new SessionSettings();
 		CredentialsSettings = new CredentialsSettings();
@@ -121,5 +136,11 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 		SessionSettingsReader.Write(sessionSettingsToWrite);
 
 		HabiticaSettingsReader.Save();
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		Timer.Dispose();
+		base.Dispose(disposing);
 	}
 }

@@ -11,7 +11,7 @@
 			 xmlns:toolkit="clr-namespace:Community.VisualStudio.Toolkit;assembly=Community.VisualStudio.Toolkit"
 			 toolkit:Themes.UseVsTheme="True"
 			 mc:Ignorable="d"
-			 d:DesignHeight="370"
+			 d:DesignHeight="450"
 			 d:DesignWidth="327"
 			 Name="MyToolWindow"
 			 xmlns:local="clr-namespace:HabiticaHourUpVSIX"
@@ -24,6 +24,8 @@
 				<ColumnDefinition Width="*"/>
 			</Grid.ColumnDefinitions>
 			<Grid.RowDefinitions>
+				<RowDefinition Height="36"/>
+				<RowDefinition Height="36"/>
 				<RowDefinition Height="36"/>
 				<RowDefinition Height="36"/>
 				<RowDefinition Height="36"/>
@@ -73,6 +75,21 @@
 
 			<Label Content="Show error on habitica score up failure" Grid.Row="9"/>
 			<CheckBox IsChecked="{Binding ShowErrorOnFailure}" Grid.Row="9" Grid.Column="1"/>
-		</Grid>
+
+            <Label Content="Beep on success tick" Grid.Row="10"/>
+            <CheckBox IsChecked="{Binding BeepOnSuccess}" Grid.Row="10" Grid.Column="1"/>
+
+            <Grid Grid.Row="11" Grid.ColumnSpan="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Beep audio file path "/>
+                <TextBox Text="{Binding OnBeepAudioPath}" Grid.Column="1"/>
+                <Button Content="&#x1F4C1;" Command="{Binding GetAudioBeepPathDialogCommand}" Margin="3.45" Grid.Column="2"/>
+            </Grid>
+        </Grid>
 	</ScrollViewer>
 </UserControl>

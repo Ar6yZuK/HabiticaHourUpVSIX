@@ -70,5 +70,29 @@ namespace HabiticaHourUpVSIX.AppSettings {
                 this["ShowErrorOnFailure"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool BeepOnSuccess {
+            get {
+                return ((bool)(this["BeepOnSuccess"]));
+            }
+            set {
+                this["BeepOnSuccess"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string BeepAudioPath {
+            get {
+                return ((string)(this["BeepAudioPath"]));
+            }
+            set {
+                this["BeepAudioPath"] = value;
+            }
+        }
     }
 }
