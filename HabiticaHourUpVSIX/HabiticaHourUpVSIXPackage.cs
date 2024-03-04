@@ -47,6 +47,8 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 			if (!userSettings.BeepOnSuccess)
 				return;
 
+			// TODO: Maybe show error if userSettings.BeepAudioPath was empty
+			// TODO: Fast fix: always set beepAudioPath
 			SetMusicPathIfNull(userSettings.BeepAudioPath);
 			_soundPlayer.Play();
 
@@ -54,19 +56,26 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 				=> _soundPlayer.AudioPath = string.IsNullOrEmpty(_soundPlayer.AudioPath) ? beepMusicPath : _soundPlayer.AudioPath;
 		};
 
-		SessionSettingsReader = new SessionSettings();
-		CredentialsSettings = new CredentialsSettings();
+		// timeOfCache is expected time of load
+		var timeOfCache = TimeSpan.FromSeconds(10);
+		string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+		string vsixSettingsPath = $"{appDataPath}/Ar6yZuK/VSIX/{Vsix.Name}/";
 
-		UserSettingsReader = new UserSettings();
+		SessionSettingsReader = new SessionSettings();
+		// TODO: Maybe encrypt HabiticaCredentials somehow
+		CredentialsSettings = new CachedSettingsInFile<HabiticaCredentials>($"{vsixSettingsPath}credentials.json", new("", ""), timeOfCache);
+
+		UserSettingsModel defaultUserSettings = new(TimeSpan.FromHours(1), "", IsAutoScoreUp: false, ShowErrorOnFailure: true, BeepOnSuccess: true, "");
+		UserSettingsReader = new CachedSettingsInFile<UserSettingsModel>($"{vsixSettingsPath}user_settings.json", defaultUserSettings, timeOfCache);
 		UserSettingsReader.OnSaving += UserSettingsReader_OnSaving;
 
-		HabiticaSettingsReader = new HabiticaSettings();
-		HabiticaSettingsModel habiticaSettings = HabiticaSettingsReader.Read();
-
-		UserSettingsModel vsSettings = UserSettingsReader.Read();
+		HabiticaSettingsReader = new CachedSettingsInFile<HabiticaSettingsModel>($"{vsixSettingsPath}local_settings.json", new(), timeOfCache);
 
 		Timer = new MyTimer();
 		Timer.Tick += Tick;
+
+		HabiticaSettingsModel habiticaSettings = HabiticaSettingsReader.Read();
+		UserSettingsModel vsSettings = UserSettingsReader.Read();
 
 		TimeSpan tickAfter = habiticaSettings.LastWorkTime <= TimeSpan.Zero ? vsSettings.Divisor : habiticaSettings.LastWorkTime;
 
@@ -122,7 +131,8 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 
 	private void OnClose()
 	{
-		this.HabiticaSettingsReader.SetLastTickAfterWithSave(Timer.NextTick);
+		// TODO: do not remember last work time. Maybe delete property LastWorkTime
+		this.HabiticaSettingsReader.SetWithSave(x => x.LastWorkTime, Timer.NextTick);
 	}
 
 	private void AddTicksToAllSettings(int addedTicks)
@@ -140,7 +150,7 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 
 	protected override void Dispose(bool disposing)
 	{
-		Timer.Dispose();
+		Timer?.Dispose();
 		base.Dispose(disposing);
 	}
 }

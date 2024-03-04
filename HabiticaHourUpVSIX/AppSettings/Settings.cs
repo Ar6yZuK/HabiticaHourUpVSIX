@@ -69,6 +69,78 @@ internal sealed class UserSettings : SettingsWithSaving<UserSettings3, UserSetti
 		Source.Save();
 	}
 }
+internal class SettingsInFile<T>(string fileName, T defaultSettings) : SettingsWithSaving<T>
+	where T : struct
+{
+	public override T Read()
+	{
+		if (!File.Exists(fileName))
+		{
+			Write(defaultSettings);
+			return defaultSettings;
+		}
+
+		string data = File.ReadAllText(fileName);
+		var result = JsonConvert.DeserializeObject<T>(data);
+
+		return result;
+	}
+
+	public override void Write(T value)
+	{
+		string data = JsonConvert.SerializeObject(value, Formatting.Indented);
+		WriteDataToFile(fileName, data);
+
+		static void WriteDataToFile(string fileName, string data)
+		{
+			CreateDirectoryIfNotExists(Path.GetDirectoryName(fileName));
+			File.WriteAllText(fileName, data);
+			static void CreateDirectoryIfNotExists(string dirPath)
+			{
+				if (!Directory.Exists(dirPath))
+					Directory.CreateDirectory(dirPath);
+			}
+		}
+	}
+
+}
+// TODO: Maybe add ICachedSettings interface if needed
+internal class CachedSettings<T>(Settings<T> settingsToCache, TimeSpan timeOfCache) : Settings<T>
+	where T : struct
+{
+	private DateTime _expires;
+	private T _cachedValue;
+
+	public override T Read()
+	{
+		if (_expires > DateTime.Now)
+			return _cachedValue;
+
+		_expires = DateTime.Now + timeOfCache;
+		return _cachedValue = settingsToCache.Read();
+	}
+	public override void Write(T value)
+	{
+		_expires = DateTime.Now - TimeSpan.FromSeconds(1d);
+		settingsToCache.Write(value);
+	}
+}
+internal class CachedSettingsWithSaving<T>(SettingsWithSaving<T> settings, TimeSpan timeOfCache) : SettingsWithSaving<T>
+	where T : struct
+{
+	private readonly CachedSettings<T> _cachedSettings = new(settings, timeOfCache);
+
+	public override T Read() => _cachedSettings.Read();
+	public override void Write(T value) => _cachedSettings.Write(value);
+}
+internal class CachedSettingsInFile<T>(string fileName, T defaultSettings, TimeSpan timeOfCache) : SettingsWithSaving<T>
+	where T : struct
+{
+	private readonly CachedSettingsWithSaving<T> _cachedSettingsInFile = new(new SettingsInFile<T>(fileName, defaultSettings), timeOfCache);
+
+	public override T Read() => _cachedSettingsInFile.Read();
+	public override void Write(T value) => _cachedSettingsInFile.Write(value);
+}
 internal sealed class HabiticaSettings : SettingsWithSaving<HabiticaSettings1, HabiticaSettingsModel>
 {
 	protected override HabiticaSettings1 Source => HabiticaSettings1.Default;
@@ -81,13 +153,13 @@ internal sealed class HabiticaSettings : SettingsWithSaving<HabiticaSettings1, H
 }
 internal sealed class CredentialsSettings : SettingsWithSaving<CredentialsSettings1, HabiticaCredentials>
 {
-    protected override CredentialsSettings1 Source => CredentialsSettings1.Default;
+	protected override CredentialsSettings1 Source => CredentialsSettings1.Default;
 
-    public override void Save()
-    {
-        base.Save();
-        Source.Save();
-    }
+	public override void Save()
+	{
+		base.Save();
+		Source.Save();
+	}
 }
 internal sealed class SessionSettings : Settings<SessionSettingsModel>
 {
