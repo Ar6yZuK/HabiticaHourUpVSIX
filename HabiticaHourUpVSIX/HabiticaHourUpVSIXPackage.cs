@@ -19,8 +19,7 @@ namespace HabiticaHourUpVSIX;
 [InstalledProductRegistration(Vsix.Name, Vsix.Description, Vsix.Version)]
 [ProvideMenuResource("Menus.ctmenu", 1)]
 [Guid(PackageGuids.HabiticaHourUpVSIXString)]
-//[ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOpening_string, PackageAutoLoadFlags.BackgroundLoad)]
-[ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExistsAndNotBuildingAndNotDebugging_string, PackageAutoLoadFlags.BackgroundLoad)]
+[ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOpening_string, PackageAutoLoadFlags.BackgroundLoad)]
 [ProvideToolWindow(typeof(SettingsToolWindow.Pane))]
 public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 {
@@ -73,14 +72,8 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 		HabiticaSettingsModel habiticaSettings = HabiticaSettingsReader.Read();
 		UserSettingsModel vsSettings = UserSettingsReader.Read();
 
-		TimeSpan tickAfter = habiticaSettings.LastWorkTime <= TimeSpan.Zero ? vsSettings.Divisor : habiticaSettings.LastWorkTime;
-
+		TimeSpan tickAfter = vsSettings.Divisor;
 		Timer.Change(tickAfter, vsSettings.Divisor);
-
-		HabiticaSettingsReader.SetLastTickAfterWithSave(tickAfter);
-
-		await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-		VS.Events.SolutionEvents.OnAfterCloseSolution += OnClose;
 	}
 
 	internal void PlayBeep()
@@ -142,12 +135,6 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 	private void UserSettingsReader_OnSaving(UserSettingsModel userSettingsModel)
 	{
 		Timer.Change(Timer.NextTick, userSettingsModel.Divisor);
-	}
-
-	private void OnClose()
-	{
-		// TODO: do not remember last work time. Maybe delete property LastWorkTime
-		this.HabiticaSettingsReader.SetWithSave(x => x.LastWorkTime, Timer.NextTick);
 	}
 
 	private void AddTicksToAllSettings(int addedTicks)
