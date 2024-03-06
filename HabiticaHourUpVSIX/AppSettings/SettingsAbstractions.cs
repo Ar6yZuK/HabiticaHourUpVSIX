@@ -7,6 +7,7 @@ public interface ISettings<T>
 	T Read();
 	void Write(T value);
 }
+// TODO: Maybe add IDisposable
 public interface ISaveable<T>
 	where T : struct
 {

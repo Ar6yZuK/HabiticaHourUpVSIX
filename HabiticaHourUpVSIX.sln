@@ -5,7 +5,7 @@ VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HabiticaHourUpVSIX", "HabiticaHourUpVSIX\HabiticaHourUpVSIX.csproj", "{07D5F794-ACB0-4774-96B5-8A9D1C7D2A07}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SettingsTests", "SettingsTests\SettingsTests.csproj", "{2E485C89-4D7C-410F-A8B5-0B27DBD1AB36}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HabiticaHourUpVSIX.Tests", "SettingsTests\HabiticaHourUpVSIX.Tests.csproj", "{2E485C89-4D7C-410F-A8B5-0B27DBD1AB36}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

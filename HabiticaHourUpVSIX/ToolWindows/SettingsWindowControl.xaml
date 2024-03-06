@@ -84,11 +84,13 @@
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
 
                 <Label Content="Beep audio file path "/>
                 <TextBox Text="{Binding OnBeepAudioPath}" Grid.Column="1"/>
-                <Button Content="&#x1F4C1;" Command="{Binding GetAudioBeepPathDialogCommand}" Margin="3.45" Grid.Column="2"/>
+                <Button Content="&#x1F508;" Margin="2.7" Command="{Binding TestBeepCommand}" Grid.Column="2"/>
+                <Button Content="&#x1F4C1;" Command="{Binding GetAudioBeepPathDialogCommand}" Margin="0, 3.45, 3.45, 3.45" Grid.Column="3"/>
             </Grid>
         </Grid>
 	</ScrollViewer>

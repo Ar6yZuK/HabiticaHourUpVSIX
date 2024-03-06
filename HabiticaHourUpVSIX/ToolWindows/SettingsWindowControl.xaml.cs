@@ -169,6 +169,9 @@ public partial class SettingsWindow : UserControl, INotifyPropertyChanged
 			OnPropertyChanged(nameof(OnBeepAudioPath));
 		}
 	}
+	[RelayCommand]
+	private void TestBeep()
+		=> _package.PlayBeep();
 
 	protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
 		=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

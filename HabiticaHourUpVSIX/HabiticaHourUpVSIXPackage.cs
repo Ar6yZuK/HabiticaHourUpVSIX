@@ -9,6 +9,7 @@ using HabiticaHourUpVSIX.Habitica.Abstractions;
 using HabiticaHourUpVSIX.ToolWindows;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Threading;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 #nullable enable
@@ -47,26 +48,30 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 			if (!userSettings.BeepOnSuccess)
 				return;
 
-			SetMusicPathIfNull(userSettings.BeepAudioPath);
-			_soundPlayer.Play();
-
-			void SetMusicPathIfNull(string beepMusicPath)
-				=> _soundPlayer.AudioPath = string.IsNullOrEmpty(_soundPlayer.AudioPath) ? beepMusicPath : _soundPlayer.AudioPath;
+			// UserSettingsReader is CachedSettings that means Play Beep can read from settings without performance decreasing
+			PlayBeep();
 		};
 
-		SessionSettingsReader = new SessionSettings();
-		CredentialsSettings = new CredentialsSettings();
+		// timeOfCache is expected time of load
+		var timeOfCache = TimeSpan.FromSeconds(10);
+		string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+		string vsixSettingsPath = $"{appDataPath}/Ar6yZuK/VSIX/{Vsix.Name}/";
 
-		UserSettingsReader = new UserSettings();
+		SessionSettingsReader = new SessionSettings();
+		// TODO: Maybe encrypt HabiticaCredentials somehow
+		CredentialsSettings = new CachedSettingsInFile<HabiticaCredentials>($"{vsixSettingsPath}credentials.json", new("", ""), timeOfCache);
+
+		UserSettingsModel defaultUserSettings = new(TimeSpan.FromHours(1), "", IsAutoScoreUp: false, ShowErrorOnFailure: true, BeepOnSuccess: true, "");
+		UserSettingsReader = new CachedSettingsInFile<UserSettingsModel>($"{vsixSettingsPath}user_settings.json", defaultUserSettings, timeOfCache);
 		UserSettingsReader.OnSaving += UserSettingsReader_OnSaving;
 
-		HabiticaSettingsReader = new HabiticaSettings();
-		HabiticaSettingsModel habiticaSettings = HabiticaSettingsReader.Read();
-
-		UserSettingsModel vsSettings = UserSettingsReader.Read();
+		HabiticaSettingsReader = new CachedSettingsInFile<HabiticaSettingsModel>($"{vsixSettingsPath}local_settings.json", new(), timeOfCache);
 
 		Timer = new MyTimer();
 		Timer.Tick += Tick;
+
+		HabiticaSettingsModel habiticaSettings = HabiticaSettingsReader.Read();
+		UserSettingsModel vsSettings = UserSettingsReader.Read();
 
 		TimeSpan tickAfter = habiticaSettings.LastWorkTime <= TimeSpan.Zero ? vsSettings.Divisor : habiticaSettings.LastWorkTime;
 
@@ -76,6 +81,25 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 
 		await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 		VS.Events.SolutionEvents.OnAfterCloseSolution += OnClose;
+	}
+
+	internal void PlayBeep()
+	{
+		var userSettings = UserSettingsReader.Read();
+
+		_soundPlayer.AudioPath = userSettings.BeepAudioPath;
+		if (string.IsNullOrWhiteSpace(userSettings.BeepAudioPath))
+		{
+			VS.MessageBox.ShowError($"{nameof(userSettings.BeepOnSuccess)} was enabled, but {nameof(userSettings.BeepAudioPath)} was empty");
+			return;
+		}
+		if (!File.Exists(userSettings.BeepAudioPath))
+		{
+			VS.MessageBox.ShowError("Attempt to play audio with non-existent audio file");
+			return;
+		}
+
+		_soundPlayer.Play();
 	}
 
 	private void Tick()
@@ -122,7 +146,8 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 
 	private void OnClose()
 	{
-		this.HabiticaSettingsReader.SetLastTickAfterWithSave(Timer.NextTick);
+		// TODO: do not remember last work time. Maybe delete property LastWorkTime
+		this.HabiticaSettingsReader.SetWithSave(x => x.LastWorkTime, Timer.NextTick);
 	}
 
 	private void AddTicksToAllSettings(int addedTicks)
@@ -140,7 +165,7 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 
 	protected override void Dispose(bool disposing)
 	{
-		Timer.Dispose();
+		Timer?.Dispose();
 		base.Dispose(disposing);
 	}
 }
