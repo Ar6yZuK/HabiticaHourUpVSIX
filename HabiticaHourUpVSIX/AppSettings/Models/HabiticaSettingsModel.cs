@@ -2,4 +2,4 @@
 
 namespace HabiticaHourUpVSIX.AppSettings.Models;
 
-public record struct HabiticaSettingsModel(TimeSpan LastWorkTime, int TotalTicks);
+public record struct HabiticaSettingsModel(TimeSpan LastWorkTimeLeft, DateTime LastCloseDateTime, int TotalTicks);

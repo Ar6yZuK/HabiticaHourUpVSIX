@@ -10,6 +10,7 @@ using HabiticaHourUpVSIX.ToolWindows;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Threading;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 #nullable enable
@@ -23,6 +24,9 @@ namespace HabiticaHourUpVSIX;
 [ProvideToolWindow(typeof(SettingsToolWindow.Pane))]
 public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 {
+	private readonly TimeSpan OneMinute = TimeSpan.FromMinutes(1d);
+	private readonly TimeSpan OneDay = TimeSpan.FromDays(1d);
+
 	private IAudioPlayer _soundPlayer;
 
 	public SettingsWithSaving<HabiticaSettingsModel> HabiticaSettingsReader { get; private set; }
@@ -74,6 +78,50 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 
 		TimeSpan tickAfter = vsSettings.Divisor;
 		Timer.Change(tickAfter, vsSettings.Divisor);
+
+		await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+		VS.Events.SolutionEvents.OnAfterCloseSolution += OnClose;
+
+		await SetLastTimerIfUserAgreeAsync(habiticaSettings, vsSettings.Divisor);
+	}
+
+	private async Task SetLastTimerIfUserAgreeAsync(HabiticaSettingsModel habiticaSettings, TimeSpan divisor)
+	{
+		var lastWorkTimeLeft = habiticaSettings.LastWorkTimeLeft;
+		//if (lastWorkTimeLeft < OneMinute)
+		//	return;
+
+		var lastCloseAgo = DateTime.Now - habiticaSettings.LastCloseDateTime;
+		string lastCloseAgoFormat = @"hh\:mm\:ss";
+		if (lastCloseAgo >= OneDay)
+			lastCloseAgoFormat = @"dd\:hh\:mm\:ss";
+
+		string setLastNextTickMessage = $"""
+On last session next tick was: {lastWorkTimeLeft}. 
+Do you want to load it?
+Last session was on: {habiticaSettings.LastCloseDateTime}({lastCloseAgo.ToString(lastCloseAgoFormat)} ago)
+""";
+
+		var model = new InfoBarModel(setLastNextTickMessage, new[] { new InfoBarHyperlink("Click here to load") });
+
+		var infoBar = await VS.InfoBar.CreateAsync(model);
+		// if infoBar was null, maybe solution not loaded, then we wait for it.
+		if (infoBar is null)
+		{
+			VS.Events.SolutionEvents.OnAfterOpenSolution += SolutionOpened;
+			return;
+			async void SolutionOpened(Solution? obj)
+			{
+				VS.Events.SolutionEvents.OnAfterOpenSolution -= SolutionOpened;
+				// We read because there may have been changes in settings outside(settings file may be changed)
+				await SetLastTimerIfUserAgreeAsync(HabiticaSettingsReader.Read(), UserSettingsReader.Read().Divisor);
+			}
+		}
+
+		// Maybe close infoBar on click
+		infoBar.ActionItemClicked += (s, e) => { Timer.Change(lastWorkTimeLeft, divisor); /*((InfoBar)s).Close();*/ };
+
+		await infoBar.TryShowInfoBarUIAsync();
 	}
 
 	internal void PlayBeep()
@@ -131,6 +179,11 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 				}
 			}).FireAndForget();
 	}
+	private void OnClose()
+	{
+		HabiticaSettingsReader.SetWithSave(x => x.LastWorkTimeLeft, Timer.NextTick);
+		HabiticaSettingsReader.SetWithSave(x => x.LastCloseDateTime, DateTime.Now);
+	}
 
 	private void UserSettingsReader_OnSaving(UserSettingsModel userSettingsModel)
 	{
@@ -152,6 +205,7 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 
 	protected override void Dispose(bool disposing)
 	{
+		VS.Events.SolutionEvents.OnAfterCloseSolution -= OnClose;
 		Timer?.Dispose();
 		base.Dispose(disposing);
 	}

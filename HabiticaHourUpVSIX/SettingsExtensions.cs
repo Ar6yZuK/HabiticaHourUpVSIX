@@ -6,14 +6,6 @@ namespace HabiticaHourUpVSIX;
 // Need read before write, because there may be data that needs to be left untouched
 public static partial class SettingsExtensions
 {
-	public static void SetLastTickAfterWithSave(this SettingsWithSaving<HabiticaSettingsModel> obj1, TimeSpan lastTickToSet)
-	{
-		HabiticaSettingsModel settingsRead = obj1.Read();
-		var settingsToWrite = settingsRead with { LastWorkTime = lastTickToSet };
-
-		obj1.Write(settingsToWrite);
-		obj1.Save();
-	}
 	public static void SetTotalTicksWithSave(this SettingsWithSaving<HabiticaSettingsModel> obj1, int ticksToSet)
 	{
 		HabiticaSettingsModel settingsRead = obj1.Read();
