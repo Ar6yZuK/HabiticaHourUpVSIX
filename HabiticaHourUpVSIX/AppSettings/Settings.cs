@@ -72,6 +72,8 @@ internal sealed class UserSettings : SettingsWithSaving<UserSettings3, UserSetti
 internal class SettingsInFile<T>(string fileName, T defaultSettings) : SettingsWithSaving<T>
 	where T : struct
 {
+	private readonly JsonSerializerSettings _deserializationSettings = new() { MissingMemberHandling = MissingMemberHandling.Error };
+
 	public override T Read()
 	{
 		if (!File.Exists(fileName))
@@ -81,7 +83,19 @@ internal class SettingsInFile<T>(string fileName, T defaultSettings) : SettingsW
 		}
 
 		string data = File.ReadAllText(fileName);
-		var result = JsonConvert.DeserializeObject<T>(data);
+
+		T result = defaultSettings;
+		try
+		{
+			result = JsonConvert.DeserializeObject<T>(data, _deserializationSettings);
+		}
+		catch (JsonSerializationException)
+		{
+			// On member not found we read all existing members and write it
+			result = JsonConvert.DeserializeObject<T>(data);
+			Write(result);
+			return result;
+		}
 
 		return result;
 	}
