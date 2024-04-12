@@ -12,7 +12,7 @@ namespace HabiticaHourUpVSIX.AppSettings {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.6.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.9.0.0")]
     internal sealed partial class HabiticaSettings1 : global::System.Configuration.ApplicationSettingsBase {
         
         private static HabiticaSettings1 defaultInstance = ((HabiticaSettings1)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new HabiticaSettings1())));
@@ -20,18 +20,6 @@ namespace HabiticaHourUpVSIX.AppSettings {
         public static HabiticaSettings1 Default {
             get {
                 return defaultInstance;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("00:00:00")]
-        public global::System.TimeSpan LastWorkTime {
-            get {
-                return ((global::System.TimeSpan)(this["LastWorkTime"]));
-            }
-            set {
-                this["LastWorkTime"] = value;
             }
         }
         

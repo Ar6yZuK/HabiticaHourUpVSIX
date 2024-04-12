@@ -5,6 +5,8 @@ namespace HabiticaHourUpVSIX;
 
 public interface ITimer : IDisposable
 {
+	delegate void TimerChangedHandler(bool changed, TimeSpan dueTime, TimeSpan period, TimeSpan nextTick);
+	event TimerChangedHandler? Changed;
 	event Action? Tick;
 
 	DateTime? Next { get; }
@@ -18,6 +20,7 @@ public class MyTimer : ITimer, IDisposable
 	private bool _disposedValue;
 
 	public event Action? Tick;
+	public event ITimer.TimerChangedHandler? Changed;
 
 	public TimeSpan Period { get; protected set; }
 	public DateTime? Next { get; protected set; }
@@ -38,7 +41,9 @@ public class MyTimer : ITimer, IDisposable
 	{
 		Period = period;
 		Next = DateTime.Now.Add(dueTime);
-		return _timer.Change(dueTime, period);
+		var changed = _timer.Change(dueTime, period);
+		Changed?.Invoke(changed, dueTime, period, NextTick);
+		return changed;
 	}
 
 	#region Dispose

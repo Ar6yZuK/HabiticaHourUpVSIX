@@ -107,7 +107,17 @@ public partial class SettingsWindow : UserControl, INotifyPropertyChanged
 		this.DataContext = this;
 		_package = habiticaHourUpVSIXPackage;
 
-		_package.HabiticaSettingsReader.OnSaving += Settings_OnSaving;
+		_package.HabiticaSettingsReader.OnSaving += 
+			(HabiticaSettingsModel _) => 
+			{
+				OnPropertyChanged(nameof(TotalTicks));
+			};
+		_package.SessionSettingsReader.OnChanged += 
+			(SessionSettingsModel _) => 
+			{
+				OnPropertyChanged(nameof(SessionTicksSent));
+				OnPropertyChanged(nameof(SessionTicks));
+			};
 
 		_package.HabiticaClient.OnSuccessfullySend += delegate { OnPropertyChanged(nameof(SessionTicksSent)); };
 
@@ -117,6 +127,7 @@ public partial class SettingsWindow : UserControl, INotifyPropertyChanged
 		_timeToTickValidator = new(TimeToTick, minValue: TimeSpan.Zero, maxTimeToTickValue);
 		var maxDivisorValue = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
 		_divisorValidator = new(Divisor, minValue: TimeSpan.FromSeconds(30), maxValue: maxDivisorValue);
+		_package.Timer.Changed += delegate { OnPropertyChanged(nameof(TimeToTick)); };
 
 		InitializeComponent();
 
@@ -140,12 +151,6 @@ public partial class SettingsWindow : UserControl, INotifyPropertyChanged
 		var passwordBox = (PasswordBox)sender;
 		string apiKey = passwordBox.Password;
 		_package.CredentialsSettings.SetApiKeyWithSave(apiKey);
-	}
-
-	private void Settings_OnSaving(HabiticaSettingsModel arg)
-	{
-		OnPropertyChanged(nameof(TotalTicks));
-		OnPropertyChanged(nameof(SessionTicks));
 	}
 
 	[RelayCommand]

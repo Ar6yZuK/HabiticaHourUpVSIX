@@ -10,7 +10,6 @@ using HabiticaHourUpVSIX.ToolWindows;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Threading;
 using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 #nullable enable
@@ -24,10 +23,14 @@ namespace HabiticaHourUpVSIX;
 [ProvideToolWindow(typeof(SettingsToolWindow.Pane))]
 public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 {
+	internal readonly string _vsixSettingsPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}/Ar6yZuK/VSIX/{Vsix.Name}/";
+
 	private readonly TimeSpan OneMinute = TimeSpan.FromMinutes(1d);
 	private readonly TimeSpan OneDay = TimeSpan.FromDays(1d);
 
 	private IAudioPlayer _soundPlayer;
+
+	private SettingsInFile<SessionSettingsModel> LastSessionSettingsReader => new($"{_vsixSettingsPath}last_session.json", default);
 
 	public SettingsWithSaving<HabiticaSettingsModel> HabiticaSettingsReader { get; private set; }
 	public SettingsWithSaving<HabiticaCredentials> CredentialsSettings { get; private set; }
@@ -57,18 +60,16 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 
 		// timeOfCache is expected time of load
 		var timeOfCache = TimeSpan.FromSeconds(10);
-		string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-		string vsixSettingsPath = $"{appDataPath}/Ar6yZuK/VSIX/{Vsix.Name}/";
 
-		SessionSettingsReader = new SessionSettings();
+		SessionSettingsReader = new SettingsInFile<SessionSettingsModel>($"{_vsixSettingsPath}current_session.json", default);
 		// TODO: Maybe encrypt HabiticaCredentials somehow
-		CredentialsSettings = new CachedSettingsInFile<HabiticaCredentials>($"{vsixSettingsPath}credentials.json", new("", ""), timeOfCache);
+		CredentialsSettings = new CachedSettingsInFile<HabiticaCredentials>($"{_vsixSettingsPath}credentials.json", new("", ""), timeOfCache);
 
 		UserSettingsModel defaultUserSettings = new(TimeSpan.FromHours(1), "", IsAutoScoreUp: false, ShowErrorOnFailure: true, BeepOnSuccess: true, "");
-		UserSettingsReader = new CachedSettingsInFile<UserSettingsModel>($"{vsixSettingsPath}user_settings.json", defaultUserSettings, timeOfCache);
+		UserSettingsReader = new CachedSettingsInFile<UserSettingsModel>($"{_vsixSettingsPath}user_settings.json", defaultUserSettings, timeOfCache);
 		UserSettingsReader.OnSaving += UserSettingsReader_OnSaving;
 
-		HabiticaSettingsReader = new CachedSettingsInFile<HabiticaSettingsModel>($"{vsixSettingsPath}local_settings.json", new(), timeOfCache);
+		HabiticaSettingsReader = new CachedSettingsInFile<HabiticaSettingsModel>($"{_vsixSettingsPath}local_settings.json", new(), timeOfCache);
 
 		Timer = new MyTimer();
 		Timer.Tick += Tick;
@@ -82,24 +83,29 @@ public sealed class HabiticaHourUpVSIXPackage : ToolkitPackage
 		await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 		VS.Events.SolutionEvents.OnAfterCloseSolution += OnClose;
 
-		await SetLastTimerIfUserAgreeAsync(habiticaSettings, vsSettings.Divisor);
+		var lastSessionModel = LastSessionSettingsReader.Read();
+		await SetLastSessionIfUserAgreeAsync(lastSessionModel);
 	}
 
-	private async Task SetLastTimerIfUserAgreeAsync(HabiticaSettingsModel habiticaSettings, TimeSpan divisor)
+	private async Task SetLastSessionIfUserAgreeAsync(SessionSettingsModel lastSessionModel)
 	{
-		var lastWorkTimeLeft = habiticaSettings.LastWorkTimeLeft;
+		TimeSpan lastWorkTimeLeft = GetLastWorkTimeOrDivisor(lastSessionModel, out bool lastWorkTimeLeftIsNull);
+
 		if (lastWorkTimeLeft < OneMinute)
 			return;
 
-		var lastCloseAgo = DateTime.Now - habiticaSettings.LastCloseDateTime;
+		DateTime? lastCloseDateTime = lastSessionModel.CloseDateTime;
+
+		TimeSpan? lastCloseAgo = DateTime.Now - lastCloseDateTime;
 		string lastCloseAgoFormat = @"hh\:mm\:ss";
 		if (lastCloseAgo >= OneDay)
 			lastCloseAgoFormat = @"dd\:hh\:mm\:ss";
 
 		string setLastNextTickMessage = $"""
-On last session next tick was: {lastWorkTimeLeft}. 
+On last session next tick was: {(lastWorkTimeLeftIsNull ? $"{lastWorkTimeLeft}(divisor)" : lastWorkTimeLeft.ToString())}. 
+Last session was on: {lastCloseDateTime?.ToString() ?? "?"}({lastCloseAgo?.ToString(lastCloseAgoFormat) ?? "?"} ago)
+With ticks sent: {lastSessionModel.TicksSent} and ticks happened: {lastSessionModel.Ticks}
 Do you want to load it?
-Last session was on: {habiticaSettings.LastCloseDateTime}({lastCloseAgo.ToString(lastCloseAgoFormat)} ago)
 """;
 
 		var model = new InfoBarModel(setLastNextTickMessage, new[] { new InfoBarHyperlink("Click here to load") });
@@ -110,18 +116,37 @@ Last session was on: {habiticaSettings.LastCloseDateTime}({lastCloseAgo.ToString
 		{
 			VS.Events.SolutionEvents.OnAfterOpenSolution += SolutionOpened;
 			return;
-			async void SolutionOpened(Solution? obj)
+			async void SolutionOpened(Solution? _)
 			{
 				VS.Events.SolutionEvents.OnAfterOpenSolution -= SolutionOpened;
-				// We read because there may have been changes in settings outside(settings file may be changed)
-				await SetLastTimerIfUserAgreeAsync(HabiticaSettingsReader.Read(), UserSettingsReader.Read().Divisor);
+				await SetLastSessionIfUserAgreeAsync(lastSessionModel);
 			}
 		}
 
 		// Maybe close infoBar on click
-		infoBar.ActionItemClicked += (s, e) => { Timer.Change(lastWorkTimeLeft, divisor); /*((InfoBar)s).Close();*/ };
+		infoBar.ActionItemClicked += (s, e) =>
+		{
+			// TODO: Maybe make sum of Ticks and TicksSent
+			this.SessionSettingsReader.Write(lastSessionModel);
+			// Maybe add overload of ITimer/MyTimer.Change method without period parameter
+			Timer.Change(lastWorkTimeLeft, UserSettingsReader.Read().Divisor);
+
+			/*((InfoBar)s).Close();*/
+		};
 
 		await infoBar.TryShowInfoBarUIAsync();
+
+		TimeSpan GetLastWorkTimeOrDivisor(SessionSettingsModel sessionModel, out bool lastWorkTimeLeftIsNull)
+		{
+			if (sessionModel.WorkTimeLeft.HasValue)
+			{
+				lastWorkTimeLeftIsNull = false;
+				return sessionModel.WorkTimeLeft.Value;
+			}
+
+			lastWorkTimeLeftIsNull = true;
+			return UserSettingsReader.Read().Divisor;
+		}
 	}
 
 	internal void PlayBeep()
@@ -181,8 +206,16 @@ Last session was on: {habiticaSettings.LastCloseDateTime}({lastCloseAgo.ToString
 	}
 	private void OnClose()
 	{
-		HabiticaSettingsReader.SetWithSave(x => x.LastWorkTimeLeft, Timer.NextTick);
-		HabiticaSettingsReader.SetWithSave(x => x.LastCloseDateTime, DateTime.Now);
+		var lastSessionSettingsInFile = LastSessionSettingsReader;
+
+		var session = SessionSettingsReader.Read() with { WorkTimeLeft = Timer.NextTick, CloseDateTime = DateTime.Now };
+
+		// Saving in file last session at once, per close visual studio.
+		lastSessionSettingsInFile.Write(session);
+		// Save does nothing in SettingsInFile<>...
+		//lastSessionSettingsInFile.Save();
+
+		SessionSettingsReader.Write(default);
 	}
 
 	private void UserSettingsReader_OnSaving(UserSettingsModel userSettingsModel)

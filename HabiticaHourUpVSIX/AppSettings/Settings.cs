@@ -104,6 +104,7 @@ internal class SettingsInFile<T>(string fileName, T defaultSettings) : SettingsW
 	{
 		string data = JsonConvert.SerializeObject(value, Formatting.Indented);
 		WriteDataToFile(fileName, data);
+		base.Write(value);
 
 		static void WriteDataToFile(string fileName, string data)
 		{
@@ -137,6 +138,7 @@ internal class CachedSettings<T>(Settings<T> settingsToCache, TimeSpan timeOfCac
 	{
 		_expires = DateTime.Now - TimeSpan.FromSeconds(1d);
 		settingsToCache.Write(value);
+		base.Write(value);
 	}
 }
 internal class CachedSettingsWithSaving<T>(SettingsWithSaving<T> settings, TimeSpan timeOfCache) : SettingsWithSaving<T>
@@ -145,7 +147,11 @@ internal class CachedSettingsWithSaving<T>(SettingsWithSaving<T> settings, TimeS
 	private readonly CachedSettings<T> _cachedSettings = new(settings, timeOfCache);
 
 	public override T Read() => _cachedSettings.Read();
-	public override void Write(T value) => _cachedSettings.Write(value);
+	public override void Write(T value)
+	{
+		_cachedSettings.Write(value);
+		base.Write(value);
+	}
 }
 internal class CachedSettingsInFile<T>(string fileName, T defaultSettings, TimeSpan timeOfCache) : SettingsWithSaving<T>
 	where T : struct
@@ -153,7 +159,11 @@ internal class CachedSettingsInFile<T>(string fileName, T defaultSettings, TimeS
 	private readonly CachedSettingsWithSaving<T> _cachedSettingsInFile = new(new SettingsInFile<T>(fileName, defaultSettings), timeOfCache);
 
 	public override T Read() => _cachedSettingsInFile.Read();
-	public override void Write(T value) => _cachedSettingsInFile.Write(value);
+	public override void Write(T value)
+	{
+		_cachedSettingsInFile.Write(value);
+		base.Write(value);
+	}
 }
 internal sealed class HabiticaSettings : SettingsWithSaving<HabiticaSettings1, HabiticaSettingsModel>
 {
@@ -178,11 +188,14 @@ internal sealed class CredentialsSettings : SettingsWithSaving<CredentialsSettin
 internal sealed class SessionSettings : Settings<SessionSettingsModel>
 {
 	private readonly SourceDestMapper<SessionSettingsModelClass, SessionSettingsModel> _mapper = new();
-	private readonly SessionSettingsModelClass _source = SessionSettingsModelClass.Default;
+	private readonly SessionSettingsModelClass _source = new(default, default, default, default);
 
 	public override SessionSettingsModel Read()
 		=> _mapper.Map(_source);
 
 	public override void Write(SessionSettingsModel value)
-		=> _mapper.Map(value, _source);
+	{
+		_mapper.Map(value, _source);
+		base.Write(value);
+	}
 }

@@ -15,11 +15,19 @@ public interface ISaveable<T>
 	
 	void Save();
 }
-public abstract class Settings<T> : ISettings<T> where T : struct
+public interface INotifyChanged<T>
 {
-	public abstract T Read();
+	public event Action<T>? OnChanged;
+}
+public abstract class Settings<TModel> : INotifyChanged<TModel>, ISettings<TModel> where TModel : struct
+{
+	public event Action<TModel>? OnChanged;
 
-	public abstract void Write(T value);
+	public abstract TModel Read();
+	public virtual void Write(TModel value)
+	{
+		OnChanged?.Invoke(value);
+	}
 }
 
 public abstract class SettingsWithSaving<T>
@@ -46,7 +54,10 @@ public abstract class SettingsWithSaving<TSource, TDest>
 	public override TDest Read()
 		=> _mapper.Map(Source);
 	public override void Write(TDest value)
-		=> _mapper.Map(value, Source);
+	{
+		_mapper.Map(value, Source);
+		base.Write(value);
+	}
 }
 
 //public abstract class Settings<TSource, TDest>
